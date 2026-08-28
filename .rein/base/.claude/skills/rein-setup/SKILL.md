@@ -25,8 +25,15 @@ on any failure — it names your next action.
 
 Inspect the tree yourself — never ask the human something it answers:
 
-- Stack, toolchain, candidate verify commands (manifests, lockfiles,
-  CI config, Makefiles, package scripts).
+- Stack and toolchain (manifests, lockfiles, CI config, Makefiles,
+  package scripts).
+- **The gate proposal.** Collect every candidate check (build,
+  typecheck, tests, lint, format) from CI config and scripts, then
+  **run each one** and record outcome and wall-clock time. Produce a
+  proposal table: check | command | evidence (where you found it) |
+  runtime | recommendation (gate / slow-tier / ledger). A check that
+  fails on the untouched tree is debt, not a gate candidate. You
+  derive this table; the human only rules on it.
 - **Existing instruction files**: CLAUDE.md, AGENTS.md, .cursorrules,
   and anything similar. These get triaged in step 3, never ignored
   and never adopted wholesale.
@@ -55,17 +62,24 @@ you kept derivable material — re-triage.
 
 ## 4. Interview the human
 
-One round, concrete options, covering only what discovery and triage
-could not settle:
+One round. **Every item is a ruling on a proposal you present with
+evidence and a recommended default — never an open question.** If you
+are about to ask something open-ended, you skipped discovery; go back
+and derive the proposal first. What stays with the human is policy —
+what blocks "done", what risk is acceptable — not facts.
 
-- The triage table itself: show Drop/Demote/Flag decisions with
+- The triage table: Drop/Demote/Flag decisions with file:line
   evidence; the human rules on every Flag.
-- Each config-writer conflict: who owns the file from now on —
-  rein (the other tool must stop writing it) or the other tool
-  (rein leaves that file unmanaged)?
-- Which commands define "done", and which are too slow for every
-  change?
-- Anything agents must never touch.
+- The gate proposal table from step 2, with your recommended
+  composition marked. The human approves, adjusts, or re-tiers —
+  they should never have to name a command themselves.
+- Each config-writer conflict: who owns the file from now on — rein
+  (the other tool must stop writing it) or the other tool (rein
+  leaves that file unmanaged)?
+- Forbidden surfaces: propose candidates you found (deploy scripts,
+  migration dirs, secrets, generated code), then ask what to add —
+  the one item where an open follow-up is legitimate, because risk
+  tolerance is theirs.
 
 ## 5. Configure
 
