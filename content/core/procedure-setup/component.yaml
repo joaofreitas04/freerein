@@ -1,0 +1,17 @@
+name: procedure-setup
+kind: core
+version: 0.1.0
+subsystem: instructions
+rung: conditional
+rent:
+  class: amplifier
+provides:
+  - skills/rein-setup/SKILL.md
+requires: []
+conflicts: []
+description: >
+  The setup interview: a user-invoked judgment procedure that
+  configures the installed harness by driving `rein`. Use when the
+  human asks to set up, tune, or finish configuring the harness.
+  Do NOT use for routine work sessions — it is a configuration
+  procedure, not an operating loop.

@@ -1,0 +1,20 @@
+name: codex
+version: 0.1.0
+instruction_file:
+  path: AGENTS.md
+  imports: false
+  max_bytes: 32768
+skills:
+  dir: .agents/skills
+  frontmatter: agents
+  user_invoked_flag: ""
+hooks:
+  events: []
+  post_compaction_reinjection: false
+settings:
+  path: ""
+  permissions: false
+state_dir: .rein/state
+degradations:
+  - "no lifecycle hook surface: enforcement stays at the instruction rung on this host"
+  - "skills: invocation-governance flags unverified for this host"

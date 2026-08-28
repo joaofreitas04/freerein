@@ -31,9 +31,18 @@ against it — it is what makes the four guarantees mechanical.
 
 - `hash` is the rendered content at install. `doctor` compares it to
   the working tree: a mismatch is **local drift — detected and
-  respected**, never silently overwritten. Upgrades on drifted files
-  go through a three-way merge (base = lockfile's recorded content
-  source, ours = working tree, theirs = new upstream).
+  respected**, never silently overwritten.
+- **The base store.** `apply` mirrors the installed (upstream) content
+  of every managed file under `.rein/base/` — committed to the repo,
+  since it is the merge base. When a file is both locally edited and
+  upstream-changed, `apply` three-way merges (base = `.rein/base/`
+  copy, ours = working tree, theirs = new upstream): clean merges are
+  written and the base advances; conflicts leave the file alone and
+  write a markered artifact under `.rein/out/merge/`, with the fix in
+  the diagnostic. A drifted-but-unmerged path keeps its
+  installed-content hash in the lock, so drift stays visible — a lock
+  that adopted the tree hash would let the next apply clobber the
+  local edit.
 - `shadowed` records the next-highest-priority provider of the same
   path, so `remove` restores it — guarantee 3.
 - `refs` is the refcount: which components/bundles need this file.

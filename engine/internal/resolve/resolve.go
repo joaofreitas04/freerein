@@ -19,6 +19,10 @@ import (
 // instruction file.
 const FragmentDir = "AGENTS.md.d/"
 
+// SkillsDir is the host-neutral skills prefix; the renderer maps it
+// onto the adapter's skills directory.
+const SkillsDir = "skills/"
+
 type Provider struct {
 	Layer     string `json:"layer"`
 	Component string `json:"component"`
@@ -138,12 +142,16 @@ func Render(s *Set, a *adapter.Adapter) (map[string]*Rendered, error) {
 		if strings.HasPrefix(p, FragmentDir) {
 			continue
 		}
+		final := p
+		if strings.HasPrefix(p, SkillsDir) {
+			final = a.Skills.Dir + "/" + strings.TrimPrefix(p, SkillsDir)
+		}
 		mode := uint32(0o644)
 		if strings.HasPrefix(p, "scripts/") {
 			mode = 0o755
 		}
-		out[p] = &Rendered{
-			Path: p, Hash: Hash(e.Content), Refs: []string{e.Winner.Component},
+		out[final] = &Rendered{
+			Path: final, Hash: Hash(e.Content), Refs: []string{e.Winner.Component},
 			Layer: e.Winner.Layer, Content: e.Content, Mode: mode,
 		}
 	}

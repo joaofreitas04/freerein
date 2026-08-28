@@ -107,11 +107,6 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 		e.Fail("CONFIG_INVALID", err.Error(), "fix "+ConfigName+" and re-run")
 		return nil
 	}
-	if len(cfg.Presets) > 0 || len(cfg.Extensions) > 0 {
-		e.Fail("NOT_IMPLEMENTED", "presets/extensions are declared but the walking skeleton resolves core + overrides only",
-			"remove presets/extensions from "+ConfigName+" for now")
-		return nil
-	}
 	ad, err := adapter.Load(g.Content, cfg.Adapter)
 	if err != nil {
 		e.Fail("UNKNOWN_ADAPTER", err.Error(), "fix the adapter field in "+ConfigName)
@@ -122,22 +117,60 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 		e.Fail("CORE_INVALID", err.Error(), "this is an engine bug — report it")
 		return nil
 	}
-	// probes: spec/component-manifest.md rule 4
-	for _, c := range core {
-		for _, req := range c.Manifest.Requires {
-			if ok, detail := g.probe(req); !ok {
-				e.Fail("REQUIREMENT_UNMET",
-					fmt.Sprintf("component %s requires %q: %s", c.Manifest.Name, req, detail),
-					"satisfy the requirement in the target repo, or remove the component")
+	// layer order per spec/resolution.md: overrides > presets > extensions > core
+	layers := []resolve.Layer{}
+	sources := map[string]string{"overrides": "local", "core": "embedded@" + Version}
+	if ov := g.loadOverrides(e); ov != nil {
+		layers = append(layers, resolve.Layer{ID: "overrides", Components: []*component.Loaded{ov}})
+	}
+	for _, kind := range []struct {
+		kind    string
+		entries []string
+	}{{"preset", cfg.Presets}, {"extension", cfg.Extensions}} {
+		for _, src := range kind.entries {
+			c, err := g.loadSource(src)
+			if err != nil {
+				e.Fail("SOURCE_INVALID", fmt.Sprintf("%s %q: %v", kind.kind, src, err),
+					"registry sources (name@version) are not implemented yet — use a local path (./…) to a component directory")
+				return nil
+			}
+			if c.Manifest.Kind != kind.kind {
+				e.Fail("KIND_MISMATCH",
+					fmt.Sprintf("%q is declared under %ss but its manifest says kind: %s", src, kind.kind, c.Manifest.Kind),
+					"move it to the matching list in "+ConfigName+" or fix its component.yaml")
+				return nil
+			}
+			id := kind.kind + ":" + c.Manifest.Name
+			layers = append(layers, resolve.Layer{ID: id, Components: []*component.Loaded{c}})
+			sources[id] = "path:" + src
+		}
+	}
+	layers = append(layers, resolve.Layer{ID: "core", Components: core})
+	// probes (spec/component-manifest.md rule 4) and declared conflicts,
+	// across every loaded component
+	all := map[string]*component.Loaded{}
+	for _, l := range layers {
+		for _, c := range l.Components {
+			all[c.Manifest.Name] = c
+			for _, req := range c.Manifest.Requires {
+				if ok, detail := g.probe(req); !ok {
+					e.Fail("REQUIREMENT_UNMET",
+						fmt.Sprintf("component %s requires %q: %s", c.Manifest.Name, req, detail),
+						"satisfy the requirement in the target repo, or remove the component")
+					return nil
+				}
+			}
+		}
+	}
+	for name, c := range all {
+		for _, rival := range c.Manifest.Conflicts {
+			if _, loaded := all[rival]; loaded {
+				e.Fail("CONFLICT", fmt.Sprintf("%s declares a conflict with %s and both are loaded", name, rival),
+					"remove one of the two from "+ConfigName)
 				return nil
 			}
 		}
 	}
-	layers := []resolve.Layer{}
-	if ov := g.loadOverrides(e); ov != nil {
-		layers = append(layers, resolve.Layer{ID: "overrides", Components: []*component.Loaded{ov}})
-	}
-	layers = append(layers, resolve.Layer{ID: "core", Components: core})
 	set, err := resolve.Resolve(layers)
 	if err != nil {
 		e.Fail("RESOLVE_FAILED", err.Error(), "fix the offending component and re-run")
@@ -149,6 +182,9 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 		return nil
 	}
 	// declared degradations: spec/host-adapter.md rule 1
+	for _, d := range ad.Degradations {
+		e.Diag(envelope.Info, "HOST_DEGRADATION", ad.Name+": "+d, "")
+	}
 	if !ad.Hooks.PostCompactionReinjection {
 		e.Diag(envelope.Warning, "HOST_NO_COMPACTION_HOOK",
 			ad.Name+": no post-compaction re-injection point; the instruction file is the only bootstrap",
@@ -156,11 +192,7 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 	}
 	var lrefs []lockfile.LayerRef
 	for _, l := range layers {
-		src := "local"
-		if l.ID == "core" {
-			src = "embedded@" + Version
-		}
-		lrefs = append(lrefs, lockfile.LayerRef{ID: l.ID, Source: src})
+		lrefs = append(lrefs, lockfile.LayerRef{ID: l.ID, Source: sources[l.ID]})
 	}
 	return &resolution{cfg: cfg, adapter: ad, set: set, rendered: rendered, layers: lrefs}
 }
@@ -259,7 +291,7 @@ func (g *Engine) computePlan(r *resolution) (*Plan, error) {
 		switch {
 		case drifted && rf.Hash != entry.Hash:
 			p.Drift = append(p.Drift, PlanItem{Path: path, Component: entry.Component,
-				Detail: "locally edited AND upstream changed — needs a three-way merge (not yet implemented); apply will refuse this path"})
+				Detail: "locally edited AND upstream changed — apply will attempt a three-way merge"})
 		case drifted:
 			p.Drift = append(p.Drift, PlanItem{Path: path, Component: entry.Component,
 				Detail: "locally edited since install — respected, apply will not touch it"})
@@ -335,15 +367,67 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 	}
 	prevLock, _ := lockfile.Read(g.Repo)
 	applied := []string{}
+	merged := map[string]bool{} // drifted paths reconciled this run
 	for path, rf := range r.rendered {
 		item := findItem(p, path)
 		if item == nil {
-			continue // unchanged
+			// unchanged — backfill the base store for locks that
+			// predate it, so future upgrades can merge
+			if _, ok := g.readBase(path); !ok {
+				_ = g.writeBase(path, rf.Content)
+			}
+			continue
 		}
 		if inDrift(p, path) {
-			e.Diag(envelope.Warning, "DRIFT_SKIPPED",
-				path+" was locally edited since install; apply left it alone",
-				"reconcile manually: diff against .rein/out/dump.json content, or move your edit to "+OverridesDir)
+			var prevHash string
+			if prevLock != nil {
+				if prev, ok := prevLock.Files[path]; ok {
+					prevHash = prev.Hash
+				}
+			}
+			if rf.Hash == prevHash {
+				// local edit only — respected, untouched
+				e.Diag(envelope.Warning, "DRIFT_SKIPPED",
+					path+" was locally edited since install; apply left it alone",
+					"intentional edits belong in "+OverridesDir+" so they survive upgrades")
+				continue
+			}
+			// local edit AND upstream change: three-way merge
+			base, ok := g.readBase(path)
+			if !ok {
+				e.Diag(envelope.Warning, "MERGE_NO_BASE",
+					path+" was locally edited and upstream changed, but no merge base is recorded",
+					"reconcile manually against .rein/out/dump.json, or move your edit to "+OverridesDir+" and re-run apply")
+				continue
+			}
+			ours, err := os.ReadFile(filepath.Join(g.Repo, path))
+			if err != nil {
+				e.Fail("FILE_UNREADABLE", path+": "+err.Error(), "check permissions")
+				return
+			}
+			out, conflict, err := mergeFile(ours, base, rf.Content)
+			if err != nil {
+				e.Fail("MERGE_FAILED", path+": "+err.Error(), "ensure `git` is on PATH; reconcile manually otherwise")
+				return
+			}
+			if conflict {
+				artifact := filepath.Join(OutDir, "merge", path)
+				full := filepath.Join(g.Repo, artifact)
+				_ = os.MkdirAll(filepath.Dir(full), 0o755)
+				_ = os.WriteFile(full, out, 0o644)
+				e.Diag(envelope.Warning, "MERGE_CONFLICT",
+					path+": local edit and upstream change overlap; the file was left alone",
+					"resolve the conflict markers in "+artifact+", copy the result over "+path+", then re-run `rein apply --yes`")
+				continue
+			}
+			if err := os.WriteFile(filepath.Join(g.Repo, path), out, os.FileMode(rf.Mode)); err != nil {
+				e.Fail("WRITE_FAILED", err.Error(), "check permissions")
+				return
+			}
+			_ = g.writeBase(path, rf.Content)
+			merged[path] = true
+			applied = append(applied, path+" (merged)")
+			e.Diag(envelope.Info, "MERGED", path+": upstream change merged with your local edit", "")
 			continue
 		}
 		full := filepath.Join(g.Repo, path)
@@ -355,11 +439,16 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 			e.Fail("WRITE_FAILED", err.Error(), "check permissions")
 			return
 		}
+		if err := g.writeBase(path, rf.Content); err != nil {
+			e.Fail("WRITE_FAILED", err.Error(), "check permissions on "+BaseDir)
+			return
+		}
 		applied = append(applied, path)
 	}
 	for _, item := range p.Removes {
 		// refcount rule: every ref must be gone from the resolution.
 		_ = os.Remove(filepath.Join(g.Repo, item.Path))
+		_ = os.Remove(g.basePath(item.Path))
 		applied = append(applied, item.Path+" (removed)")
 	}
 	lock := &lockfile.Lock{
@@ -379,10 +468,13 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 			}
 		}
 		hash := rf.Hash
-		// A drifted path keeps its installed-content hash: the local
-		// edit must stay visible as drift, or the next apply would
-		// read it as an ordinary change and clobber it.
-		if inDrift(p, path) && prevLock != nil {
+		// A drifted path that was not merged keeps its
+		// installed-content hash: the local edit must stay visible as
+		// drift, or the next apply would read it as an ordinary
+		// change and clobber it. A merged path banks the new
+		// upstream hash — the local edit stays visible because the
+		// merged tree content still differs from it.
+		if inDrift(p, path) && !merged[path] && prevLock != nil {
 			if prev, ok := prevLock.Files[path]; ok {
 				hash = prev.Hash
 			}

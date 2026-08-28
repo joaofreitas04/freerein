@@ -45,11 +45,14 @@ change with a version bump, never a silent edit.
 
 ## Current state
 
-Walking skeleton DONE (`docs/design.md` §10): `rein init → plan →
-apply → dump → doctor` works end-to-end — layered resolution with
-overrides shadowing core, fragment rendering through the claude-code
-adapter, lockfile with refs/shadowed/hashes, two-phase confirm,
-idempotent apply, drift detected and never clobbered. Covered by
-`engine/internal/engine/engine_test.go`. Next: three-way merge for
-drifted+changed paths, the codex adapter, extensions/presets loading
-from sources, and the first judgment procedure (init interview).
+Walking skeleton DONE, plus the first four milestones: three-way
+merge over a committed `.rein/base/` store (clean merges apply,
+conflicts leave the file alone with a markered artifact under
+`.rein/out/merge/`); the codex adapter (AGENTS.md, declared
+degradations); local-path extensions/presets with kind enforcement
+and the preset-cannot-add rule live; and the first judgment
+procedure, `rein-setup` (user-invoked skill, drives the engine,
+writes only overrides). Covered by `engine_test.go` +
+`milestones_test.go`. Next: registry refs (`name@version`, sha-pinned)
+with `add`/`remove`/`info`, `upgrade` as a first-class command, and
+the operate/diagnose procedures.

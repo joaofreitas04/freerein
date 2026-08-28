@@ -9,13 +9,21 @@ How `harness.yaml` (intent) becomes a resolved file set.
 3. **Extensions** — in the order declared in `harness.yaml`
 4. **Core** — embedded in the engine binary
 
+Preset and extension entries are source strings. Implemented: local
+paths (`./…`, `../…`, `/…`) naming a component directory — the
+component-development loop. Planned: registry refs (`name@version`),
+sha-pinned in the lockfile. A source's manifest `kind` must match the
+list it is declared under.
+
 ## Rules
 
 1. **First match per path wins. Whole-file. No deep merge, ever.**
    The effective content of any path is readable in exactly one
    place. (Instruction-file composition happens by rendering an
    `AGENTS.md.d/` fragment directory into the adapter's instruction
-   file — fragments are separate paths, so the rule holds.)
+   file — fragments are separate paths, so the rule holds. Paths
+   under `skills/` are likewise host-neutral and map onto the
+   adapter's skills directory at render time.)
 2. A later layer cannot prevent an earlier (higher-priority) layer
    from overriding it: distribution does not confer authority.
 3. `rein dump` prints the resolved set — every path, its winning
