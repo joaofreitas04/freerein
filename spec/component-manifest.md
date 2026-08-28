@@ -6,7 +6,8 @@ engine validates and enforces. Unknown keys are rejected, not ignored.
 
 ```yaml
 name: spec-flow                  # kebab-case, unique within its source
-kind: extension                  # extension | preset | bundle
+kind: extension                  # core | extension | preset | bundle
+                                 # (core is reserved for engine-embedded components)
 version: 0.3.0                   # semver
 subsystem: feedback              # instructions | tools | environment | state | feedback
 rung: hook                       # instruction | conditional | permission | hook | isolation

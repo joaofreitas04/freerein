@@ -1,0 +1,17 @@
+name: instructions-base
+kind: core
+version: 0.1.0
+subsystem: instructions
+rung: instruction
+rent:
+  class: amplifier
+provides:
+  - AGENTS.md.d/00-base.md
+requires:
+  - git
+conflicts: []
+description: >
+  The harness preamble: orientation, the verify-before-done rule, and
+  the state-file ritual. Use always — it is the core's spine fragment.
+  Do NOT use for project-specific conventions — those belong in
+  .rein/overrides/.

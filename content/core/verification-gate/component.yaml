@@ -1,0 +1,18 @@
+name: verification-gate
+kind: core
+version: 0.1.0
+subsystem: feedback
+rung: instruction
+rent:
+  class: amplifier
+provides:
+  - AGENTS.md.d/20-verification.md
+  - scripts/verify
+requires: []
+conflicts: []
+description: >
+  The deterministic definition of done: scripts/verify plus the
+  instruction fragment binding completion to it. Use always —
+  feedback is the highest-return subsystem. Do NOT use for CI
+  configuration — the gate runs locally; mirroring it in CI is a
+  separate concern.

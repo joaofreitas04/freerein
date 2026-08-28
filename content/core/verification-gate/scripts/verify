@@ -1,0 +1,11 @@
+#!/bin/sh
+# scripts/verify — the definition of done for this repository.
+# Managed by rein (verification-gate). Add project checks via
+# .rein/overrides/scripts/verify — this stub FAILS until you do,
+# because a gate that cannot fail is not a gate.
+set -eu
+
+echo "verify: no project checks configured yet." >&2
+echo "verify: add your build/test/lint commands by overriding this file:" >&2
+echo "verify:   .rein/overrides/scripts/verify   (then: rein apply --yes)" >&2
+exit 1

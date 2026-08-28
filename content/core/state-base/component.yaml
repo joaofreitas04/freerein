@@ -1,0 +1,17 @@
+name: state-base
+kind: core
+version: 0.1.0
+subsystem: state
+rung: instruction
+rent:
+  class: amplifier
+provides:
+  - AGENTS.md.d/30-state.md
+  - .rein/state/PROGRESS.md
+requires: []
+conflicts: []
+description: >
+  Cross-session progress state: a progress file written at session end
+  and read at session start. Use always — without state, every session
+  is a cold start. Do NOT use for task tracking that lives in an
+  external tracker.

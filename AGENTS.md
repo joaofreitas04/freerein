@@ -36,8 +36,20 @@ change with a version bump, never a silent edit.
 | Core content, procedures, adapters | `content/` |
 | Registry index generator | `registry/` |
 
+## Commands
+
+| Purpose | Command |
+|---|---|
+| Definition of done | `bash scripts/verify` (gofmt + vet + test + build) |
+| Build the binary | `go build -o rein ./engine/cmd/rein` |
+
 ## Current state
 
-Design phase. Next milestone: the walking skeleton
-(`docs/design.md` §10) — `rein init → plan → apply → dump → doctor`
-on a toy repo, core only, Claude Code adapter only.
+Walking skeleton DONE (`docs/design.md` §10): `rein init → plan →
+apply → dump → doctor` works end-to-end — layered resolution with
+overrides shadowing core, fragment rendering through the claude-code
+adapter, lockfile with refs/shadowed/hashes, two-phase confirm,
+idempotent apply, drift detected and never clobbered. Covered by
+`engine/internal/engine/engine_test.go`. Next: three-way merge for
+drifted+changed paths, the codex adapter, extensions/presets loading
+from sources, and the first judgment procedure (init interview).

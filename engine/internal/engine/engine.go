@@ -1,0 +1,421 @@
+// Package engine orchestrates the rein commands over the embedded
+// content, the target repo, and the lockfile.
+package engine
+
+import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+	"time"
+
+	"gopkg.in/yaml.v3"
+
+	"github.com/joaofreitas04/freerein/engine/internal/adapter"
+	"github.com/joaofreitas04/freerein/engine/internal/component"
+	"github.com/joaofreitas04/freerein/engine/internal/envelope"
+	"github.com/joaofreitas04/freerein/engine/internal/lockfile"
+	"github.com/joaofreitas04/freerein/engine/internal/resolve"
+)
+
+const (
+	Version      = "0.1.0-dev"
+	ConfigName   = "harness.yaml"
+	OverridesDir = ".rein/overrides"
+	OutDir       = ".rein/out"
+)
+
+type Config struct {
+	Adapter    string   `yaml:"adapter"`
+	Presets    []string `yaml:"presets"`
+	Extensions []string `yaml:"extensions"`
+}
+
+type Engine struct {
+	Repo    string // target repo root
+	Content fs.FS  // embedded content: core/, adapters/
+}
+
+func (g *Engine) engineID() string { return "rein " + Version }
+
+// ---------- config ----------
+
+func (g *Engine) readConfig() (*Config, error) {
+	b, err := os.ReadFile(filepath.Join(g.Repo, ConfigName))
+	if err != nil {
+		return nil, err
+	}
+	var c Config
+	dec := yaml.NewDecoder(bytes.NewReader(b))
+	dec.KnownFields(true)
+	if err := dec.Decode(&c); err != nil {
+		return nil, fmt.Errorf("%s: %w", ConfigName, err)
+	}
+	if c.Adapter == "" {
+		return nil, fmt.Errorf("%s: adapter is required", ConfigName)
+	}
+	return &c, nil
+}
+
+// ---------- init ----------
+
+func (g *Engine) Init(e *envelope.Envelope, adapterName string) {
+	cfgPath := filepath.Join(g.Repo, ConfigName)
+	if _, err := os.Stat(cfgPath); err == nil {
+		e.Fail("ALREADY_INITIALIZED", ConfigName+" already exists in this repo",
+			"run `rein plan` to see pending changes, or edit "+ConfigName+" directly")
+		return
+	}
+	if _, err := adapter.Load(g.Content, adapterName); err != nil {
+		e.Fail("UNKNOWN_ADAPTER", err.Error(), "run `rein adapters` to list available adapters")
+		return
+	}
+	cfg := fmt.Sprintf("# FreeRein harness declaration — see spec/resolution.md\nadapter: %s\npresets: []\nextensions: []\n", adapterName)
+	if err := os.WriteFile(cfgPath, []byte(cfg), 0o644); err != nil {
+		e.Fail("WRITE_FAILED", err.Error(), "check permissions on the target repo")
+		return
+	}
+	if err := os.MkdirAll(filepath.Join(g.Repo, ".rein"), 0o755); err == nil {
+		_ = os.WriteFile(filepath.Join(g.Repo, ".rein", ".gitignore"), []byte("out/\n"), 0o644)
+	}
+	e.Result = map[string]any{"created": []string{ConfigName, ".rein/.gitignore"}, "adapter": adapterName}
+	e.Diag(envelope.Info, "INITIALIZED", "harness declared; nothing installed yet",
+		"run `rein plan` to see what `rein apply` would install")
+}
+
+// ---------- resolution pipeline ----------
+
+type resolution struct {
+	cfg      *Config
+	adapter  *adapter.Adapter
+	set      *resolve.Set
+	rendered map[string]*resolve.Rendered
+	layers   []lockfile.LayerRef
+}
+
+func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
+	cfg, err := g.readConfig()
+	if errors.Is(err, os.ErrNotExist) {
+		e.Fail("NOT_INITIALIZED", ConfigName+" not found in "+g.Repo, "run `rein init` first")
+		return nil
+	}
+	if err != nil {
+		e.Fail("CONFIG_INVALID", err.Error(), "fix "+ConfigName+" and re-run")
+		return nil
+	}
+	if len(cfg.Presets) > 0 || len(cfg.Extensions) > 0 {
+		e.Fail("NOT_IMPLEMENTED", "presets/extensions are declared but the walking skeleton resolves core + overrides only",
+			"remove presets/extensions from "+ConfigName+" for now")
+		return nil
+	}
+	ad, err := adapter.Load(g.Content, cfg.Adapter)
+	if err != nil {
+		e.Fail("UNKNOWN_ADAPTER", err.Error(), "fix the adapter field in "+ConfigName)
+		return nil
+	}
+	core, err := component.LoadAll(g.Content, "core")
+	if err != nil {
+		e.Fail("CORE_INVALID", err.Error(), "this is an engine bug — report it")
+		return nil
+	}
+	// probes: spec/component-manifest.md rule 4
+	for _, c := range core {
+		for _, req := range c.Manifest.Requires {
+			if ok, detail := g.probe(req); !ok {
+				e.Fail("REQUIREMENT_UNMET",
+					fmt.Sprintf("component %s requires %q: %s", c.Manifest.Name, req, detail),
+					"satisfy the requirement in the target repo, or remove the component")
+				return nil
+			}
+		}
+	}
+	layers := []resolve.Layer{}
+	if ov := g.loadOverrides(e); ov != nil {
+		layers = append(layers, resolve.Layer{ID: "overrides", Components: []*component.Loaded{ov}})
+	}
+	layers = append(layers, resolve.Layer{ID: "core", Components: core})
+	set, err := resolve.Resolve(layers)
+	if err != nil {
+		e.Fail("RESOLVE_FAILED", err.Error(), "fix the offending component and re-run")
+		return nil
+	}
+	rendered, err := resolve.Render(set, ad)
+	if err != nil {
+		e.Fail("RENDER_FAILED", err.Error(), "reduce instruction fragments or raise the adapter limit")
+		return nil
+	}
+	// declared degradations: spec/host-adapter.md rule 1
+	if !ad.Hooks.PostCompactionReinjection {
+		e.Diag(envelope.Warning, "HOST_NO_COMPACTION_HOOK",
+			ad.Name+": no post-compaction re-injection point; the instruction file is the only bootstrap",
+			"keep load-bearing rules in the instruction file, not in session state")
+	}
+	var lrefs []lockfile.LayerRef
+	for _, l := range layers {
+		src := "local"
+		if l.ID == "core" {
+			src = "embedded@" + Version
+		}
+		lrefs = append(lrefs, lockfile.LayerRef{ID: l.ID, Source: src})
+	}
+	return &resolution{cfg: cfg, adapter: ad, set: set, rendered: rendered, layers: lrefs}
+}
+
+// loadOverrides builds the pseudo-component for .rein/overrides/**.
+func (g *Engine) loadOverrides(e *envelope.Envelope) *component.Loaded {
+	root := filepath.Join(g.Repo, OverridesDir)
+	info, err := os.Stat(root)
+	if err != nil || !info.IsDir() {
+		return nil
+	}
+	lc := &component.Loaded{
+		Manifest: component.Manifest{
+			Name: "local-overrides", Kind: "core", Version: "local",
+			Subsystem: "instructions", Rung: "instruction",
+			Rent: component.Rent{Class: "amplifier"},
+		},
+		Files: map[string][]byte{},
+	}
+	_ = filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		rel, _ := filepath.Rel(root, p)
+		rel = filepath.ToSlash(rel)
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		lc.Files[rel] = b
+		lc.Manifest.Provides = append(lc.Manifest.Provides, rel)
+		return nil
+	})
+	if len(lc.Files) == 0 {
+		return nil
+	}
+	sort.Strings(lc.Manifest.Provides)
+	return lc
+}
+
+func (g *Engine) probe(name string) (bool, string) {
+	switch name {
+	case "git":
+		if _, err := os.Stat(filepath.Join(g.Repo, ".git")); err == nil {
+			return true, ""
+		}
+		return false, "no .git directory — the target is not a git repository"
+	}
+	return false, "unknown probe"
+}
+
+// ---------- plan ----------
+
+type PlanItem struct {
+	Path      string `json:"path"`
+	Component string `json:"component,omitempty"`
+	Detail    string `json:"detail,omitempty"`
+}
+
+type Plan struct {
+	Adds    []PlanItem `json:"adds"`
+	Changes []PlanItem `json:"changes"`
+	Drift   []PlanItem `json:"drift"`
+	Removes []PlanItem `json:"removes"`
+}
+
+func (p *Plan) empty() bool {
+	return len(p.Adds)+len(p.Changes)+len(p.Drift)+len(p.Removes) == 0
+}
+
+// plan = resolved set x lockfile x working tree (spec/resolution.md rule 5).
+func (g *Engine) computePlan(r *resolution) (*Plan, error) {
+	lock, err := lockfile.Read(g.Repo)
+	if err != nil {
+		return nil, err
+	}
+	p := &Plan{Adds: []PlanItem{}, Changes: []PlanItem{}, Drift: []PlanItem{}, Removes: []PlanItem{}}
+	var paths []string
+	for path := range r.rendered {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+	for _, path := range paths {
+		rf := r.rendered[path]
+		var entry *lockfile.FileEntry
+		if lock != nil {
+			entry = lock.Files[path]
+		}
+		if entry == nil {
+			p.Adds = append(p.Adds, PlanItem{Path: path, Component: strings.Join(rf.Refs, ", ")})
+			continue
+		}
+		treeHash, treeErr := g.treeHash(path)
+		drifted := treeErr == nil && treeHash != entry.Hash
+		missing := errors.Is(treeErr, os.ErrNotExist)
+		switch {
+		case drifted && rf.Hash != entry.Hash:
+			p.Drift = append(p.Drift, PlanItem{Path: path, Component: entry.Component,
+				Detail: "locally edited AND upstream changed — needs a three-way merge (not yet implemented); apply will refuse this path"})
+		case drifted:
+			p.Drift = append(p.Drift, PlanItem{Path: path, Component: entry.Component,
+				Detail: "locally edited since install — respected, apply will not touch it"})
+		case missing:
+			p.Adds = append(p.Adds, PlanItem{Path: path, Component: strings.Join(rf.Refs, ", "), Detail: "in lockfile but missing from tree — will be restored"})
+		case rf.Hash != entry.Hash:
+			p.Changes = append(p.Changes, PlanItem{Path: path, Component: strings.Join(rf.Refs, ", ")})
+		}
+	}
+	if lock != nil {
+		var lockPaths []string
+		for path := range lock.Files {
+			lockPaths = append(lockPaths, path)
+		}
+		sort.Strings(lockPaths)
+		for _, path := range lockPaths {
+			if _, ok := r.rendered[path]; !ok {
+				p.Removes = append(p.Removes, PlanItem{Path: path, Component: lock.Files[path].Component})
+			}
+		}
+	}
+	return p, nil
+}
+
+func (g *Engine) treeHash(path string) (string, error) {
+	b, err := os.ReadFile(filepath.Join(g.Repo, path))
+	if err != nil {
+		return "", err
+	}
+	return resolve.Hash(b), nil
+}
+
+func (g *Engine) Plan(e *envelope.Envelope) {
+	r := g.resolveAll(e)
+	if r == nil {
+		return
+	}
+	p, err := g.computePlan(r)
+	if err != nil {
+		e.Fail("LOCKFILE_INVALID", err.Error(), "inspect or delete "+lockfile.Name+" and re-run")
+		return
+	}
+	e.Result = p
+	if p.empty() {
+		e.Diag(envelope.Info, "UP_TO_DATE", "installed harness matches the resolved composition", "")
+	}
+}
+
+// ---------- apply ----------
+
+func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
+	r := g.resolveAll(e)
+	if r == nil {
+		return
+	}
+	p, err := g.computePlan(r)
+	if err != nil {
+		e.Fail("LOCKFILE_INVALID", err.Error(), "inspect or delete "+lockfile.Name+" and re-run")
+		return
+	}
+	if p.empty() {
+		e.Diag(envelope.Info, "UP_TO_DATE", "nothing to apply", "")
+		e.Result = p
+		return
+	}
+	if !yes {
+		// two-phase confirm: spec/cli-envelope.md rule 4
+		e.ConfirmRequired = p
+		e.Diag(envelope.Info, "CONFIRM_REQUIRED",
+			"apply is side-effectful and was invoked without --yes",
+			"show this change-set to the human; re-run `rein apply --yes` once approved")
+		return
+	}
+	prevLock, _ := lockfile.Read(g.Repo)
+	applied := []string{}
+	for path, rf := range r.rendered {
+		item := findItem(p, path)
+		if item == nil {
+			continue // unchanged
+		}
+		if inDrift(p, path) {
+			e.Diag(envelope.Warning, "DRIFT_SKIPPED",
+				path+" was locally edited since install; apply left it alone",
+				"reconcile manually: diff against .rein/out/dump.json content, or move your edit to "+OverridesDir)
+			continue
+		}
+		full := filepath.Join(g.Repo, path)
+		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+			e.Fail("WRITE_FAILED", err.Error(), "check permissions")
+			return
+		}
+		if err := os.WriteFile(full, rf.Content, os.FileMode(rf.Mode)); err != nil {
+			e.Fail("WRITE_FAILED", err.Error(), "check permissions")
+			return
+		}
+		applied = append(applied, path)
+	}
+	for _, item := range p.Removes {
+		// refcount rule: every ref must be gone from the resolution.
+		_ = os.Remove(filepath.Join(g.Repo, item.Path))
+		applied = append(applied, item.Path+" (removed)")
+	}
+	lock := &lockfile.Lock{
+		Version:    1,
+		ResolvedAt: time.Now().UTC().Format(time.RFC3339),
+		Engine:     g.engineID(),
+		Layers:     r.layers,
+		Files:      map[string]*lockfile.FileEntry{},
+	}
+	lock.Adapter.Name = r.adapter.Name
+	lock.Adapter.Version = r.adapter.Version
+	for path, rf := range r.rendered {
+		var shadowed []string
+		if entry, ok := r.set.Entries[path]; ok {
+			for _, s := range entry.Shadowed {
+				shadowed = append(shadowed, s.Component)
+			}
+		}
+		hash := rf.Hash
+		// A drifted path keeps its installed-content hash: the local
+		// edit must stay visible as drift, or the next apply would
+		// read it as an ordinary change and clobber it.
+		if inDrift(p, path) && prevLock != nil {
+			if prev, ok := prevLock.Files[path]; ok {
+				hash = prev.Hash
+			}
+		}
+		lock.Files[path] = &lockfile.FileEntry{
+			Layer: rf.Layer, Component: strings.Join(rf.Refs, ", "),
+			Hash: hash, Shadowed: shadowed, Refs: rf.Refs,
+		}
+	}
+	if err := lock.Write(g.Repo); err != nil {
+		e.Fail("LOCKFILE_WRITE_FAILED", err.Error(), "check permissions")
+		return
+	}
+	sort.Strings(applied)
+	e.Result = map[string]any{"applied": applied, "lockfile": lockfile.Name}
+}
+
+func findItem(p *Plan, path string) *PlanItem {
+	for _, list := range [][]PlanItem{p.Adds, p.Changes, p.Drift} {
+		for i := range list {
+			if list[i].Path == path {
+				return &list[i]
+			}
+		}
+	}
+	return nil
+}
+
+func inDrift(p *Plan, path string) bool {
+	for _, d := range p.Drift {
+		if d.Path == path {
+			return true
+		}
+	}
+	return false
+}
