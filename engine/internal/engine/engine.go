@@ -258,14 +258,15 @@ type PlanItem struct {
 }
 
 type Plan struct {
-	Adds    []PlanItem `json:"adds"`
-	Changes []PlanItem `json:"changes"`
-	Drift   []PlanItem `json:"drift"`
-	Removes []PlanItem `json:"removes"`
+	Adds      []PlanItem `json:"adds"`
+	Changes   []PlanItem `json:"changes"`
+	Drift     []PlanItem `json:"drift"`
+	Removes   []PlanItem `json:"removes"`
+	Unmanaged []PlanItem `json:"unmanaged"`
 }
 
 func (p *Plan) empty() bool {
-	return len(p.Adds)+len(p.Changes)+len(p.Drift)+len(p.Removes) == 0
+	return len(p.Adds)+len(p.Changes)+len(p.Drift)+len(p.Removes)+len(p.Unmanaged) == 0
 }
 
 // plan = resolved set x lockfile x working tree (spec/resolution.md rule 5).
@@ -274,7 +275,7 @@ func (g *Engine) computePlan(r *resolution) (*Plan, error) {
 	if err != nil {
 		return nil, err
 	}
-	p := &Plan{Adds: []PlanItem{}, Changes: []PlanItem{}, Drift: []PlanItem{}, Removes: []PlanItem{}}
+	p := &Plan{Adds: []PlanItem{}, Changes: []PlanItem{}, Drift: []PlanItem{}, Removes: []PlanItem{}, Unmanaged: []PlanItem{}}
 	var paths []string
 	for path := range r.rendered {
 		paths = append(paths, path)
@@ -287,6 +288,11 @@ func (g *Engine) computePlan(r *resolution) (*Plan, error) {
 			entry = lock.Files[path]
 		}
 		if entry == nil {
+			if th, err := g.treeHash(path); err == nil && th != rf.Hash {
+				p.Unmanaged = append(p.Unmanaged, PlanItem{Path: path, Component: strings.Join(rf.Refs, ", "),
+					Detail: "already exists with different content and is not managed by rein — apply will NOT overwrite it"})
+				continue
+			}
 			p.Adds = append(p.Adds, PlanItem{Path: path, Component: strings.Join(rf.Refs, ", ")})
 			continue
 		}
@@ -372,8 +378,17 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 	}
 	prevLock, _ := lockfile.Read(g.Repo)
 	applied := []string{}
+	for _, item := range p.Unmanaged {
+		e.Diag(envelope.Warning, "EXISTS_UNMANAGED",
+			item.Path+" already exists and is not managed by rein; apply left it alone",
+			"to keep your version: move it to "+OverridesDir+"/"+item.Path+" and re-run apply (it becomes the winning layer); to take rein's version: delete the file and re-run apply")
+		continue
+	}
 	merged := map[string]bool{} // drifted paths reconciled this run
 	for path, rf := range r.rendered {
+		if inList(p.Unmanaged, path) {
+			continue // reported above; never written, never based
+		}
 		item := findItem(p, path)
 		if item == nil {
 			// unchanged — backfill the base store for locks that
@@ -466,6 +481,9 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 	lock.Adapter.Name = r.adapter.Name
 	lock.Adapter.Version = r.adapter.Version
 	for path, rf := range r.rendered {
+		if inList(p.Unmanaged, path) {
+			continue // not ours; adopting it is the human's move
+		}
 		var shadowed []string
 		if entry, ok := r.set.Entries[path]; ok {
 			for _, s := range entry.Shadowed {
@@ -506,6 +524,15 @@ func findItem(p *Plan, path string) *PlanItem {
 		}
 	}
 	return nil
+}
+
+func inList(items []PlanItem, path string) bool {
+	for _, it := range items {
+		if it.Path == path {
+			return true
+		}
+	}
+	return false
 }
 
 func inDrift(p *Plan, path string) bool {

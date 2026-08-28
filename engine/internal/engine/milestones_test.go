@@ -204,3 +204,46 @@ func TestThreeWayMerge(t *testing.T) {
 		t.Fatal("conflict artifact with markers must be written under .rein/out/merge/")
 	}
 }
+
+// A brownfield repo's own files are never clobbered: a pre-existing
+// unmanaged file at a managed path is reported, skipped, and kept out
+// of the lockfile until the human adopts it.
+func TestUnmanagedNeverClobbered(t *testing.T) {
+	g, repo := newRepo(t, "claude-code")
+	own := "#!/bin/sh\necho my own gate\n"
+	_ = os.MkdirAll(filepath.Join(repo, "scripts"), 0o755)
+	_ = os.WriteFile(filepath.Join(repo, "scripts/verify"), []byte(own), 0o755)
+
+	e := envelope.New("plan")
+	g.Plan(e)
+	if !e.OK {
+		t.Fatalf("plan failed: %+v", e.Diagnostics)
+	}
+	e = apply(t, g)
+	if !diagCodes(e)["EXISTS_UNMANAGED"] {
+		t.Fatalf("apply must report the unmanaged file, got %+v", e.Diagnostics)
+	}
+	b, _ := os.ReadFile(filepath.Join(repo, "scripts/verify"))
+	if string(b) != own {
+		t.Fatal("apply clobbered a pre-existing unmanaged file")
+	}
+	lock, _ := os.ReadFile(filepath.Join(repo, "harness.lock"))
+	if strings.Contains(string(lock), "scripts/verify") {
+		t.Fatal("an unmanaged file must not enter the lockfile")
+	}
+	// adoption: move it to overrides — it becomes the winning layer
+	_ = os.MkdirAll(filepath.Join(repo, ".rein/overrides/scripts"), 0o755)
+	_ = os.WriteFile(filepath.Join(repo, ".rein/overrides/scripts/verify"), []byte(own), 0o644)
+	e = apply(t, g)
+	if diagCodes(e)["EXISTS_UNMANAGED"] {
+		t.Fatalf("adopted file must apply cleanly, got %+v", e.Diagnostics)
+	}
+	b, _ = os.ReadFile(filepath.Join(repo, "scripts/verify"))
+	if string(b) != own {
+		t.Fatal("adopted content must survive")
+	}
+	lock, _ = os.ReadFile(filepath.Join(repo, "harness.lock"))
+	if !strings.Contains(string(lock), `"layer": "overrides"`) {
+		t.Fatalf("adopted file must be lock-attributed to overrides:\n%s", lock)
+	}
+}

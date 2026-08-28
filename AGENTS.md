@@ -60,7 +60,16 @@ flowing through plan/apply so local edits three-way merge. Second
 judgment procedure: `rein-diagnose` (failure→subsystem→smallest
 artifact). Session discipline stays ambient in `instructions-base` —
 deliberately no operate skill (a skill restating standing fragments
-would be a second truth). Covered by `engine_test.go`,
-`milestones_test.go`, `registry_test.go`. Next: a real hosted
-registry index + publishing flow, the codex skill-frontmatter
-dialect, and dogfooding — `rein init` on this repo itself.
+would be a second truth). Publishing + dogfood DONE:
+`rein-publish` (engine/internal/publish) generates deterministic
+sha-pinned archives + index.json, refuses republishing changed
+content without a version bump (packs to temp so a refusal never
+corrupts a live archive); apply never clobbers pre-existing unmanaged
+files (EXISTS_UNMANAGED + adoption via overrides); flags may follow
+positionals. **This repo is self-hosted**: CLAUDE.md is rendered by
+rein — edit `.rein/overrides/`, never CLAUDE.md or scripts/verify
+directly, then `rein apply --yes`. Covered by `engine_test.go`,
+`milestones_test.go`, `registry_test.go`, `publish_test.go`. Next:
+host the official registry index + default registry URL, codex skill
+dialect (blocked on verified host facts), release automation
+(versioned binaries).

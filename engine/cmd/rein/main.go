@@ -51,8 +51,20 @@ func main() {
 		os.Exit(2)
 	}
 	cmd := os.Args[1]
-	if err := fs.Parse(os.Args[2:]); err != nil {
-		os.Exit(2)
+	// allow flags after positionals (Go's flag package stops at the
+	// first non-flag; an agent writing `rein add x --registry y`
+	// must not have the flag silently dropped)
+	var positionals []string
+	rest := os.Args[2:]
+	for {
+		if err := fs.Parse(rest); err != nil {
+			os.Exit(2)
+		}
+		if fs.NArg() == 0 {
+			break
+		}
+		positionals = append(positionals, fs.Arg(0))
+		rest = fs.Args()[1:]
 	}
 
 	e := envelope.New(cmd)
@@ -70,17 +82,17 @@ func main() {
 	case "doctor":
 		g.Doctor(e)
 	case "add", "remove", "info":
-		if fs.Arg(0) == "" {
+		if len(positionals) == 0 {
 			e.Fail("MISSING_ARGUMENT", cmd+" needs a component argument", "e.g. `rein "+cmd+" name@version`")
 			break
 		}
 		switch cmd {
 		case "add":
-			g.Add(e, fs.Arg(0), *registrySrc)
+			g.Add(e, positionals[0], *registrySrc)
 		case "remove":
-			g.Remove(e, fs.Arg(0))
+			g.Remove(e, positionals[0])
 		case "info":
-			g.Info(e, fs.Arg(0), *registrySrc)
+			g.Info(e, positionals[0], *registrySrc)
 		}
 	case "upgrade":
 		g.Upgrade(e, *yes, *registrySrc)

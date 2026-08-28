@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "resolved_at": "2026-08-28T17:53:48Z",
+  "engine": "rein 0.1.0-dev",
+  "adapter": {
+    "name": "claude-code",
+    "version": "0.1.0"
+  },
+  "layers": [
+    {
+      "id": "overrides",
+      "source": "local"
+    },
+    {
+      "id": "core",
+      "source": "embedded@0.1.0-dev"
+    }
+  ],
+  "files": {
+    ".claude/skills/rein-diagnose/SKILL.md": {
+      "layer": "core",
+      "component": "procedure-diagnose@0.1.0",
+      "hash": "sha256:d9141daa16320a69eeec5ace8607ad89917029aaae40c3d63f9c1108175b2e96",
+      "shadowed": null,
+      "refs": [
+        "procedure-diagnose@0.1.0"
+      ]
+    },
+    ".claude/skills/rein-setup/SKILL.md": {
+      "layer": "core",
+      "component": "procedure-setup@0.1.0",
+      "hash": "sha256:d52de5519962d82697ed7009fd9c30480d50501926d5f0dbd00dc35327f127de",
+      "shadowed": null,
+      "refs": [
+        "procedure-setup@0.1.0"
+      ]
+    },
+    ".rein/state/PROGRESS.md": {
+      "layer": "core",
+      "component": "state-base@0.1.0",
+      "hash": "sha256:f0874452ef35f8c05212e9ab5b26c0ebf5c2b8f39611119f5dc73d91a4bd06b7",
+      "shadowed": null,
+      "refs": [
+        "state-base@0.1.0"
+      ]
+    },
+    "CLAUDE.md": {
+      "layer": "render",
+      "component": "instructions-base@0.1.0, local-overrides@local, verification-gate@0.1.0, state-base@0.1.0",
+      "hash": "sha256:4e80c9b88b1e9f599c9b7cb5aaf1068694f1cb51e48bfaf4bba67e090ff85a9d",
+      "shadowed": null,
+      "refs": [
+        "instructions-base@0.1.0",
+        "local-overrides@local",
+        "verification-gate@0.1.0",
+        "state-base@0.1.0"
+      ]
+    },
+    "scripts/verify": {
+      "layer": "overrides",
+      "component": "local-overrides@local",
+      "hash": "sha256:ea325e1f777e89edd20a45c3545426bd25f6fe14a1cc741b014c40d27d9f0153",
+      "shadowed": [
+        "verification-gate@0.1.0"
+      ],
+      "refs": [
+        "local-overrides@local"
+      ]
+    }
+  }
+}

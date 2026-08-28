@@ -1,0 +1,4 @@
+# FreeRein harness declaration — see spec/resolution.md
+adapter: claude-code
+presets: []
+extensions: []

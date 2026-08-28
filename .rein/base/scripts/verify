@@ -1,0 +1,19 @@
+#!/bin/sh
+# The definition of done for the FreeRein repo itself.
+set -eu
+cd "$(dirname "$0")/.."
+
+echo "verify: gofmt"
+unformatted=$(gofmt -l engine content)
+if [ -n "$unformatted" ]; then
+  echo "verify: FAIL — gofmt needed on:" >&2
+  echo "$unformatted" >&2
+  exit 1
+fi
+echo "verify: go vet"
+go vet ./...
+echo "verify: go test"
+go test ./...
+echo "verify: go build"
+go build -o /tmp/rein-verify ./engine/cmd/rein && rm -f /tmp/rein-verify
+echo "verify: green"
