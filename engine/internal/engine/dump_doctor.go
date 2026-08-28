@@ -6,10 +6,12 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/joaofreitas04/freerein/engine/internal/component"
 	"github.com/joaofreitas04/freerein/engine/internal/envelope"
 	"github.com/joaofreitas04/freerein/engine/internal/lockfile"
+	"github.com/joaofreitas04/freerein/engine/internal/registry"
 )
 
 // Dump prints the resolved composition — the fixed point
@@ -94,7 +96,31 @@ func (g *Engine) Doctor(e *envelope.Envelope) {
 				"intentional edits belong in "+OverridesDir+" so they survive upgrades; run `rein plan` to review")
 		}
 	}
-	// 2. resolved composition vs lockfile
+	// 2. vendored components vs their sha pins (tamper detection)
+	for _, layer := range lock.Layers {
+		if layer.Sha == "" {
+			continue
+		}
+		checks++
+		ref := strings.TrimPrefix(layer.Source, "registry:")
+		dir := filepath.Join(g.Repo, VendorDir, ref)
+		if _, err := os.Stat(dir); err != nil {
+			e.Diag(envelope.Error, "VENDOR_MISSING", ref+" is pinned in the lockfile but gone from "+VendorDir,
+				"run `rein add "+ref+"` to re-fetch it")
+			continue
+		}
+		sha, err := registry.TreeHash(dir)
+		if err != nil {
+			e.Diag(envelope.Error, "VENDOR_UNREADABLE", ref+": "+err.Error(), "check permissions")
+			continue
+		}
+		if sha != layer.Sha {
+			e.Diag(envelope.Error, "VENDOR_TAMPERED",
+				ref+" no longer matches its pinned hash — its content changed after install",
+				"if the edit was yours, move it to a local-path source; otherwise re-fetch with `rein add "+ref+"` and review the diff")
+		}
+	}
+	// 3. resolved composition vs lockfile
 	r := g.resolveAll(e)
 	if r == nil {
 		return
@@ -105,7 +131,7 @@ func (g *Engine) Doctor(e *envelope.Envelope) {
 			"the resolved composition differs from what is installed",
 			"run `rein plan` to review, then `rein apply --yes`")
 	}
-	// 3. stale compensations (rent doctrine, spec/component-manifest.md)
+	// 4. stale compensations (rent doctrine, spec/component-manifest.md)
 	core, err := component.LoadAll(g.Content, "core")
 	if err == nil {
 		for _, c := range core {

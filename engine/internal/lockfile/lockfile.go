@@ -14,6 +14,7 @@ const Name = "harness.lock"
 type LayerRef struct {
 	ID     string `json:"id"`
 	Source string `json:"source"`
+	Sha    string `json:"sha,omitempty"` // tree hash pin for vendored components
 }
 
 type FileEntry struct {

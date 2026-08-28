@@ -52,7 +52,15 @@ conflicts leave the file alone with a markered artifact under
 degradations); local-path extensions/presets with kind enforcement
 and the preset-cannot-add rule live; and the first judgment
 procedure, `rein-setup` (user-invoked skill, drives the engine,
-writes only overrides). Covered by `engine_test.go` +
-`milestones_test.go`. Next: registry refs (`name@version`, sha-pinned)
-with `add`/`remove`/`info`, `upgrade` as a first-class command, and
-the operate/diagnose procedures.
+writes only overrides). Registry slice DONE
+(spec/registry.md): static-index client, `add`/`remove`/`info`/
+`upgrade`, vendoring into `.rein/vendor/` with archive sha + lockfile
+tree-hash pins, doctor tamper detection, upgrades and removals
+flowing through plan/apply so local edits three-way merge. Second
+judgment procedure: `rein-diagnose` (failure→subsystem→smallest
+artifact). Session discipline stays ambient in `instructions-base` —
+deliberately no operate skill (a skill restating standing fragments
+would be a second truth). Covered by `engine_test.go`,
+`milestones_test.go`, `registry_test.go`. Next: a real hosted
+registry index + publishing flow, the codex skill-frontmatter
+dialect, and dogfooding — `rein init` on this repo itself.

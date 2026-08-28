@@ -1,0 +1,17 @@
+name: procedure-diagnose
+kind: core
+version: 0.1.0
+subsystem: feedback
+rung: conditional
+rent:
+  class: amplifier
+provides:
+  - skills/rein-diagnose/SKILL.md
+requires: []
+conflicts: []
+description: >
+  The harness repair loop: attribute an observed agent failure to a
+  subsystem and fix it with the smallest artifact change, applied
+  through rein. Use when agents keep failing the same way, ignore
+  rules, or the gate feels wrong. Do NOT use for debugging the
+  project's own code — this diagnoses the harness, not the software.

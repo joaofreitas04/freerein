@@ -9,11 +9,12 @@ How `harness.yaml` (intent) becomes a resolved file set.
 3. **Extensions** — in the order declared in `harness.yaml`
 4. **Core** — embedded in the engine binary
 
-Preset and extension entries are source strings. Implemented: local
-paths (`./…`, `../…`, `/…`) naming a component directory — the
-component-development loop. Planned: registry refs (`name@version`),
-sha-pinned in the lockfile. A source's manifest `kind` must match the
-list it is declared under.
+Preset and extension entries are source strings: local paths (`./…`,
+`../…`, `/…`) naming a component directory — the component-development
+loop — or registry refs (`name@version`), resolved through the
+committed vendor tree at `.rein/vendor/` and sha-pinned in the
+lockfile (see spec/registry.md). A source's manifest `kind` must match
+the list it is declared under.
 
 ## Rules
 

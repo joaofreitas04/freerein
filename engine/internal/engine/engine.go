@@ -31,6 +31,7 @@ const (
 
 type Config struct {
 	Adapter    string   `yaml:"adapter"`
+	Registry   string   `yaml:"registry,omitempty"`
 	Presets    []string `yaml:"presets"`
 	Extensions []string `yaml:"extensions"`
 }
@@ -119,7 +120,10 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 	}
 	// layer order per spec/resolution.md: overrides > presets > extensions > core
 	layers := []resolve.Layer{}
-	sources := map[string]string{"overrides": "local", "core": "embedded@" + Version}
+	sources := map[string]lockfile.LayerRef{
+		"overrides": {ID: "overrides", Source: "local"},
+		"core":      {ID: "core", Source: "embedded@" + Version},
+	}
 	if ov := g.loadOverrides(e); ov != nil {
 		layers = append(layers, resolve.Layer{ID: "overrides", Components: []*component.Loaded{ov}})
 	}
@@ -128,12 +132,13 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 		entries []string
 	}{{"preset", cfg.Presets}, {"extension", cfg.Extensions}} {
 		for _, src := range kind.entries {
-			c, err := g.loadSource(src)
+			si, err := g.loadSource(src)
 			if err != nil {
 				e.Fail("SOURCE_INVALID", fmt.Sprintf("%s %q: %v", kind.kind, src, err),
-					"registry sources (name@version) are not implemented yet — use a local path (./…) to a component directory")
+					"use a local path (./…) to a component directory, or `rein add name@version` for registry components")
 				return nil
 			}
+			c := si.comp
 			if c.Manifest.Kind != kind.kind {
 				e.Fail("KIND_MISMATCH",
 					fmt.Sprintf("%q is declared under %ss but its manifest says kind: %s", src, kind.kind, c.Manifest.Kind),
@@ -142,7 +147,7 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 			}
 			id := kind.kind + ":" + c.Manifest.Name
 			layers = append(layers, resolve.Layer{ID: id, Components: []*component.Loaded{c}})
-			sources[id] = "path:" + src
+			sources[id] = lockfile.LayerRef{ID: id, Source: si.ref, Sha: si.sha}
 		}
 	}
 	layers = append(layers, resolve.Layer{ID: "core", Components: core})
@@ -192,7 +197,7 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 	}
 	var lrefs []lockfile.LayerRef
 	for _, l := range layers {
-		lrefs = append(lrefs, lockfile.LayerRef{ID: l.ID, Source: sources[l.ID]})
+		lrefs = append(lrefs, sources[l.ID])
 	}
 	return &resolution{cfg: cfg, adapter: ad, set: set, rendered: rendered, layers: lrefs}
 }
