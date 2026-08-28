@@ -247,3 +247,47 @@ func TestUnmanagedNeverClobbered(t *testing.T) {
 		t.Fatalf("adopted file must be lock-attributed to overrides:\n%s", lock)
 	}
 }
+
+// Seed files are installed once and agent-owned after: edits produce
+// no drift anywhere, deletion makes them reappear on apply.
+func TestSeedFiles(t *testing.T) {
+	g, repo := newRepo(t, "claude-code")
+	apply(t, g)
+	prog := filepath.Join(repo, ".rein/state/PROGRESS.md")
+	if _, err := os.Stat(prog); err != nil {
+		t.Fatal("seed must be installed on first apply")
+	}
+	lock, _ := os.ReadFile(filepath.Join(repo, "harness.lock"))
+	if !strings.Contains(string(lock), `"seed": true`) {
+		t.Fatal("lock must mark seed entries")
+	}
+	// the agent writes it — nothing anywhere may complain
+	_ = os.WriteFile(prog, []byte("# Progress\n\nagent wrote this\n"), 0o644)
+	e := envelope.New("doctor")
+	g.Doctor(e)
+	if !e.OK || len(e.Diagnostics) != 0 {
+		t.Fatalf("editing a seed must produce no findings, got %+v", e.Diagnostics)
+	}
+	e = envelope.New("plan")
+	g.Plan(e)
+	if !diagCodes(e)["UP_TO_DATE"] {
+		t.Fatalf("editing a seed must keep plan empty, got %+v", e.Diagnostics)
+	}
+	ea := apply(t, g)
+	b, _ := os.ReadFile(prog)
+	if !strings.Contains(string(b), "agent wrote this") {
+		t.Fatal("apply must never touch an existing seed")
+	}
+	_ = ea
+	// deletion: the seed reappears
+	_ = os.Remove(prog)
+	e = envelope.New("plan")
+	g.Plan(e)
+	if !e.OK || diagCodes(e)["UP_TO_DATE"] {
+		t.Fatal("a deleted seed must show as an add")
+	}
+	apply(t, g)
+	if _, err := os.Stat(prog); err != nil {
+		t.Fatal("apply must restore a deleted seed")
+	}
+}

@@ -24,6 +24,7 @@ type Manifest struct {
 	Rung        string   `yaml:"rung"`
 	Rent        Rent     `yaml:"rent"`
 	Provides    []string `yaml:"provides"`
+	Seeds       []string `yaml:"seeds"`
 	Requires    []string `yaml:"requires"`
 	Conflicts   []string `yaml:"conflicts"`
 	Description string   `yaml:"description"`
@@ -74,6 +75,15 @@ func (m *Manifest) Validate() error {
 	for _, r := range m.Requires {
 		if !Probes[r] {
 			return fmt.Errorf("%s: requires %q is not in the probe vocabulary", m.Name, r)
+		}
+	}
+	provided := map[string]bool{}
+	for _, p := range m.Provides {
+		provided[p] = true
+	}
+	for _, s := range m.Seeds {
+		if !provided[s] {
+			return fmt.Errorf("%s: seeds %q must also be listed in provides", m.Name, s)
 		}
 	}
 	return nil

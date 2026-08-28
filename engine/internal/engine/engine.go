@@ -287,6 +287,13 @@ func (g *Engine) computePlan(r *resolution) (*Plan, error) {
 		if lock != nil {
 			entry = lock.Files[path]
 		}
+		if rf.Seed {
+			// install-if-absent: the agent owns it after install
+			if _, err := g.treeHash(path); err != nil {
+				p.Adds = append(p.Adds, PlanItem{Path: path, Component: strings.Join(rf.Refs, ", "), Detail: "seed — installed once, agent-owned after"})
+			}
+			continue
+		}
 		if entry == nil {
 			if th, err := g.treeHash(path); err == nil && th != rf.Hash {
 				p.Unmanaged = append(p.Unmanaged, PlanItem{Path: path, Component: strings.Join(rf.Refs, ", "),
@@ -393,8 +400,10 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 		if item == nil {
 			// unchanged — backfill the base store for locks that
 			// predate it, so future upgrades can merge
-			if _, ok := g.readBase(path); !ok {
-				_ = g.writeBase(path, rf.Content)
+			if !rf.Seed {
+				if _, ok := g.readBase(path); !ok {
+					_ = g.writeBase(path, rf.Content)
+				}
 			}
 			continue
 		}
@@ -459,9 +468,11 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 			e.Fail("WRITE_FAILED", err.Error(), "check permissions")
 			return
 		}
-		if err := g.writeBase(path, rf.Content); err != nil {
-			e.Fail("WRITE_FAILED", err.Error(), "check permissions on "+BaseDir)
-			return
+		if !rf.Seed {
+			if err := g.writeBase(path, rf.Content); err != nil {
+				e.Fail("WRITE_FAILED", err.Error(), "check permissions on "+BaseDir)
+				return
+			}
 		}
 		applied = append(applied, path)
 	}
@@ -504,7 +515,7 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 		}
 		lock.Files[path] = &lockfile.FileEntry{
 			Layer: rf.Layer, Component: strings.Join(rf.Refs, ", "),
-			Hash: hash, Shadowed: shadowed, Refs: rf.Refs,
+			Hash: hash, Seed: rf.Seed, Shadowed: shadowed, Refs: rf.Refs,
 		}
 	}
 	if err := lock.Write(g.Repo); err != nil {

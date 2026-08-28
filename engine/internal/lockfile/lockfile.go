@@ -21,6 +21,7 @@ type FileEntry struct {
 	Layer     string   `json:"layer"`
 	Component string   `json:"component"`
 	Hash      string   `json:"hash"`
+	Seed      bool     `json:"seed,omitempty"` // agent-owned after install; content never tracked
 	Shadowed  []string `json:"shadowed"`
 	Refs      []string `json:"refs"`
 }

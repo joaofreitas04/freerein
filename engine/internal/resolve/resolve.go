@@ -33,6 +33,7 @@ type Entry struct {
 	Winner   Provider   `json:"winner"`
 	Shadowed []Provider `json:"shadowed"`
 	Content  []byte     `json:"-"`
+	Seed     bool       `json:"seed,omitempty"` // install-if-absent, agent-owned after
 }
 
 // Layer is one rung of the stack, highest priority first.
@@ -65,7 +66,13 @@ func Resolve(layers []Layer) (*Set, error) {
 				if e, exists := s.Entries[p]; exists {
 					e.Shadowed = append(e.Shadowed, prov)
 				} else {
-					s.Entries[p] = &Entry{Path: p, Winner: prov, Content: c.Files[p]}
+					seed := false
+					for _, sd := range c.Manifest.Seeds {
+						if sd == p {
+							seed = true
+						}
+					}
+					s.Entries[p] = &Entry{Path: p, Winner: prov, Content: c.Files[p], Seed: seed}
 				}
 			}
 		}
@@ -100,6 +107,7 @@ type Rendered struct {
 	Hash    string   `json:"hash"`
 	Refs    []string `json:"refs"`  // contributing components
 	Layer   string   `json:"layer"` // winning layer ("render" for composed files)
+	Seed    bool     `json:"seed,omitempty"`
 	Content []byte   `json:"-"`
 	Mode    uint32   `json:"-"`
 }
@@ -152,7 +160,7 @@ func Render(s *Set, a *adapter.Adapter) (map[string]*Rendered, error) {
 		}
 		out[final] = &Rendered{
 			Path: final, Hash: Hash(e.Content), Refs: []string{e.Winner.Component},
-			Layer: e.Winner.Layer, Content: e.Content, Mode: mode,
+			Layer: e.Winner.Layer, Seed: e.Seed, Content: e.Content, Mode: mode,
 		}
 	}
 	return out, nil

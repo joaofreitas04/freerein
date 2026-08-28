@@ -68,8 +68,15 @@ corrupts a live archive); apply never clobbers pre-existing unmanaged
 files (EXISTS_UNMANAGED + adoption via overrides); flags may follow
 positionals. **This repo is self-hosted**: CLAUDE.md is rendered by
 rein — edit `.rein/overrides/`, never CLAUDE.md or scripts/verify
-directly, then `rein apply --yes`. Covered by `engine_test.go`,
+directly, then `rein apply --yes`. Field test 1 (2026-08-28,
+[a private repo]) produced: **seed files** (install-if-absent,
+agent-owned, never drift-tracked — fixes the permanent DRIFT warning
+on state files), the **debt ledger** seed (`.rein/state/DEBT.md` —
+recorded, not gated), and **rein-setup v0.2**: triage of existing
+instruction corpora (drop derivable / demote to sensor / keep runbook
+residue / flag for human ruling) plus the config-writer ownership
+inventory. Doctrine grounded in the knowledge repo's
+install-time-curation synthesis. Covered by `engine_test.go`,
 `milestones_test.go`, `registry_test.go`, `publish_test.go`. Next:
 host the official registry index + default registry URL, codex skill
-dialect (blocked on verified host facts), release automation
-(versioned binaries).
+dialect (blocked on verified host facts), release automation.

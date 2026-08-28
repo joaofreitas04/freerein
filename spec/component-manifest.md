@@ -18,6 +18,10 @@ rent:
 provides:                        # paths this component renders, repo-relative
   - AGENTS.md.d/spec-flow.md
   - .claude/skills/spec/SKILL.md
+seeds: []                        # subset of provides: installed if absent,
+                                 # agent-owned after — never drift-tracked,
+                                 # never merged, restored if deleted
+                                 # (for agent-written state files)
 requires:                        # repo affordances; checked at plan time
   - test-runner                  # from the engine's probe vocabulary
 conflicts: []                    # component names this cannot compose with
@@ -38,3 +42,4 @@ description: >                   # ≤ 1024 chars; used by search/info
    vocabulary and the ecosystem grow in lockstep.
 5. `description` must contain a "Do NOT use for" clause naming its
    nearest neighbours; the registry checks those names resolve.
+6. Every `seeds` entry must also appear in `provides`.

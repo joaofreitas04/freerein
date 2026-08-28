@@ -83,6 +83,9 @@ func (g *Engine) Doctor(e *envelope.Envelope) {
 	}
 	sort.Strings(paths)
 	for _, p := range paths {
+		if lock.Files[p].Seed {
+			continue // agent-owned; content is theirs to change
+		}
 		checks++
 		th, err := g.treeHash(p)
 		switch {
