@@ -56,15 +56,15 @@ Nothing.
 Found in the 2026-08-31 audit, recorded here rather than bundled into
 an unrelated change:
 
-- **Coverage is concentrated and partly unmeasured.** `engine` 75.2%,
-  `publish` 73.2%; `registry`, `resolve`, `component`, `adapter`,
-  `envelope`, `lockfile` have no direct tests and report 0.0% because
-  plain `-cover` does not count cross-package exercise. A
-  `-coverpkg=./...` run would say what is actually untouched.
-- **`AGENTS.md` § Current state is accreting as chronology.** It
-  reads as a milestone log rather than a current-state description,
-  and it is the first thing a cold agent reads. Compressing it is a
-  deliberate edit someone should make on purpose, not a drive-by.
+- **Coverage, measured (2026-08-31, `-coverpkg=./...`): 74.0%
+  overall.** The formerly "0.0%" packages (registry, resolve,
+  component, adapter, lockfile) are in fact exercised through the
+  engine tests. True cold spots, worth tests when touched next:
+  `Dump` has no test at all; `envelope.Emit`/`emitHuman` are
+  untested, so the exit-code contract (cli-envelope rule 6) rests on
+  reading the code; `Adapters` 0%; both `main` functions 0% (the
+  flags-after-positionals loop is real logic); `detectHighTouch` 18%
+  (needs a fixture repo with actual git history).
 
 ## Assumptions / open questions
 
