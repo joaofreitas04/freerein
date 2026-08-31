@@ -18,19 +18,57 @@ What is shipped is described in `AGENTS.md` § Current state; do not
 duplicate that inventory here. This file carries only what does not
 survive in the code: what is next, what is unproven, what is blocked.
 
-**Next, in `docs/lifecycle.md` §4 order** — observe ships before
-evolve, and evolve's mechanics do not land until its substrates
-exist:
+**Next, in `docs/lifecycle.md` §4 order:**
 
-1. **Use the loop on real work.** The full lifecycle now exists —
-   init → operate → observe (journal, gate proof, citations, costs)
-   → diagnose → evolve (propose/verdict) → upgrade — and every
-   further mechanism should be demanded by a real run, not
-   speculated. Field test 2 on a brownfield repo is the natural next
-   move: it exercises rein-setup 0.7 end to end and starts real
-   citation data accruing, which the first real evolve proposal
-   needs. The first proposal on THIS repo waits for that data
-   (day-one zeros are the misreading, not evidence).
+1. **Use the loop on real work.** The lifecycle exists end to end —
+   init → operate → observe → diagnose → evolve → upgrade — and
+   every further mechanism should be demanded by a real run, not
+   speculated. Field test 2 is concluded (below); what remains is
+   sessions, on this repo and the field repo, accruing citation and
+   journal data. The first evolve proposal on THIS repo waits for
+   that data (day-one zeros are the misreading, not evidence).
+2. **Field-demanded fixes from field test 2** — cheap, evidence all
+   in this file: detection tables (nx.json as a monorepo marker
+   [real 10]; run candidates derived from angular.json targets and
+   package.json scripts [bench 1, real 10]; CONTEXT.md-class names
+   in instruction_corpus [bench 4]; shared skills dirs in
+   config_surfaces [real 15]); leading-flag dispatch fixed or the
+   error taught [real 9]; rein-setup patches (attest wording
+   [bench 6, real 12], the adoption move documented [real 11],
+   EXISTS_UNMANAGED aligned between plan and apply [bench 5],
+   proposed rules evidence-checked against the tree before apply
+   [owner 11], verify skeleton: environment section first
+   [real 13], ratchet-with-baseline [owner 9], evidence comments
+   and cheap-first ordering [owner 10]).
+3. **The paired eval** (`rein eval`): with/without differential over
+   a task set. The minimal profile is the shipped control arm
+   waiting for its experiment, and evolve verdicts need a
+   measurement stronger than citations-plus-journal can supply.
+4. **Field-report channel — designed 2026-08-31, awaiting ruling**
+   (`spec/field-report.md` v0.2): local-vs-shipped attribution read
+   from the lock, privacy-by-construction reports (component-scoped
+   facts only), case-before-fix intake with a grow-only fixture
+   corpus, publish as the never-automated signing boundary, upgrade
+   as the trust reset. Submission via gh under `report.submit`
+   (off / propose / auto) with no-unattended-egress as the
+   invariant: auto is structured-fields-only, per-destination,
+   reset-on-upgrade, never headless, owner-file only, journaled.
+   The procedure changes it requires (diagnose disposition step,
+   SHADOW_STANDING advisory, `rein report`) land only after the
+   ruling.
+5. **Setup deepening**: inspect breadth (hooks, skills directories,
+   state files, prior installs — [real 15] is the evidence),
+   symlink resolution, a wired-vs-declared cross-check; allow/block
+   asked as proposals with affordance-backed feasibility verdicts
+   instead of open questions; detected gaps matched to extension
+   `addresses:` — which is also the honest answer to what the
+   registry publishes first.
+
+Deliberately not scheduled, each waiting on its trigger: the trust
+ledger, per-model profiles, the visible-index budget check, and the
+write quarantine — whose trigger is named: before any accepted
+proposal auto-lands agent-authored content, the staging gate must
+exist (until then, publish-signing covers the boundary).
 
 Evolve mechanics shipped 2026-08-31 (journal v0.5, as designed and
 ruled): `rein propose` (six mandatory fields, refuse-before-generate,
@@ -89,9 +127,6 @@ Deliberately not included: semantic recurrence over note text (a
 procedure's judgment) and component-level aggregation (mechanical
 and legitimate, but no consumer asks for it yet — add when one
 does).
-
-Also unstarted and named in `AGENTS.md`: the minimal profile as a
-shipped control mode; release automation.
 
 ## In flight
 
