@@ -1,4 +1,4 @@
-# Field report — contract v0.2 (accepted 2026-08-31)
+# Field report — contract v0.3 (accepted 2026-08-31)
 
 A diagnosis on an installed repo ends in one of two places. If the
 failing artifact is local configuration, the override is the whole
@@ -57,10 +57,16 @@ component is not evidence about it — the counters are.
   immediate fix AND produces a report at close — never silently fork
   shipped content.
 - **Doctor advisory, `SHADOW_STANDING`:** a local override has
-  displaced a shipped default beyond a threshold age. A standing
-  shadow is a rejection expressed in configuration — the strongest
-  field evidence a shipped default is wrong — and therefore a report
-  candidate. Advisory only; shadows are legitimate and priced.
+  displaced a shipped default. The advisory lists every standing
+  shadow with its age, read from the journal's apply entries, and
+  deliberately applies **no threshold** (v0.3 amendment, ruled
+  2026-08-31): a cutoff nobody measured is an unearned number — the
+  human judges, and a number can be earned later once real shadow
+  ages exist to measure. A standing shadow is a rejection expressed
+  in configuration — the strongest field evidence a shipped default
+  is wrong — and therefore a report candidate, never an auto-filed
+  report. Advisory only; shadows are legitimate and priced, and both
+  readings travel with the finding.
 
 ## Submission — `report.submit` in `harness.yaml`
 

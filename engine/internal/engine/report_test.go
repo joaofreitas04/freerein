@@ -141,6 +141,45 @@ func TestReportRefusals(t *testing.T) {
 	}
 }
 
+// The SHADOW_STANDING advisory (spec/field-report.md v0.3, ruled
+// threshold-free 2026-08-31): doctor lists every standing local
+// override displacing a shipped default, with its age read from the
+// journal's apply entries — no cutoff, the human judges, and the
+// misreading travels with the finding. Advisory severity: shadows
+// are legitimate and priced.
+func TestDoctorShadowStanding(t *testing.T) {
+	g, repo := newRepo(t, "claude-code")
+	apply(t, g)
+	e := envelope.New("doctor")
+	g.Doctor(e)
+	if diagCodes(e)["SHADOW_STANDING"] {
+		t.Fatalf("no standing shadow yet — the advisory must stay silent, got %+v", e.Diagnostics)
+	}
+	seedFile(t, repo, ".rein/overrides/scripts/verify", "#!/bin/sh\necho custom gate\n")
+	apply(t, g)
+	e = envelope.New("doctor")
+	g.Doctor(e)
+	found := false
+	for _, d := range e.Diagnostics {
+		if d.Code != "SHADOW_STANDING" {
+			continue
+		}
+		found = true
+		if d.Severity != envelope.Info {
+			t.Fatalf("advisory only — severity must be info, got %+v", d)
+		}
+		if !strings.Contains(d.Message, "scripts/verify") || !strings.Contains(d.Message, "verification-gate") {
+			t.Fatalf("the advisory must name the path and the displaced component, got %q", d.Message)
+		}
+		if !strings.Contains(d.Message, "standing") || !strings.Contains(d.Message, "since") {
+			t.Fatalf("the advisory must carry the standing age from the journal, got %q", d.Message)
+		}
+	}
+	if !found {
+		t.Fatalf("a standing shadow must surface as SHADOW_STANDING, got %+v", e.Diagnostics)
+	}
+}
+
 func TestReportNeedsLock(t *testing.T) {
 	g, _ := newRepo(t, "claude-code") // init only, never applied — no lock
 	e := envelope.New("report")

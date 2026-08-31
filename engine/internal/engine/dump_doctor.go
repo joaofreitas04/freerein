@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -150,6 +151,10 @@ func (g *Engine) Doctor(e *envelope.Envelope) {
 	}
 	// 5. composition shape (spec/component-manifest.md rule 7)
 	compositionAdvisories(e, r.components)
+	// 5b. standing shadows (spec/field-report.md, ruled threshold-free
+	// 2026-08-31): every local override displacing a shipped default
+	// is listed with its age — no cutoff, the human judges.
+	g.shadowChecks(e, lock)
 	// 6. the gate is real — a stub that always fails is not a gate,
 	// and a repo carrying one has verification in name only.
 	gateIsStub := false
@@ -185,6 +190,45 @@ func (g *Engine) Adapters(e *envelope.Envelope) {
 	}
 	sort.Strings(names)
 	e.Result = map[string]any{"adapters": names}
+}
+
+// shadowChecks emits SHADOW_STANDING for every local override
+// displacing a shipped default (spec/field-report.md). Advisory
+// only — shadows are legitimate and priced — and deliberately
+// threshold-free: a cutoff nobody measured is an unearned number, so
+// the advisory carries the age (from the journal's apply entries)
+// and the human judges; a number can be earned once real shadow ages
+// exist to measure. A standing shadow is also a rejection expressed
+// in configuration — the strongest field evidence a shipped default
+// is wrong — which makes it a report candidate, never an auto-filed
+// report.
+func (g *Engine) shadowChecks(e *envelope.Envelope, lock *lockfile.Lock) {
+	firstApplied, _ := g.applyDates()
+	var paths []string
+	for p, entry := range lock.Files {
+		if entry.Layer == "overrides" && len(entry.Shadowed) > 0 {
+			paths = append(paths, p)
+		}
+	}
+	sort.Strings(paths)
+	for _, p := range paths {
+		entry := lock.Files[p]
+		displaced := strings.Join(entry.Shadowed, ", ")
+		age := "standing since unknown — no apply entry in the journal"
+		if at := firstApplied[p]; at != "" {
+			age = "standing since " + at
+			if t0, err := time.Parse(time.RFC3339, at); err == nil {
+				age = fmt.Sprintf("standing %d days (since %s)", int(time.Since(t0).Hours()/24), at)
+			}
+		}
+		name := entry.Shadowed[0]
+		if i := strings.IndexByte(name, '@'); i > 0 {
+			name = name[:i]
+		}
+		e.Diag(envelope.Info, "SHADOW_STANDING",
+			p+": a local override displaces "+displaced+" — "+age,
+			"two readings: local policy (legitimate, already priced — no action) or field evidence the shipped default is wrong for everyone — then carry it home with `rein report "+name+" …` (spec/field-report.md)")
+	}
 }
 
 // debtChecks audits the debt ledger's rows: a debt without evidence

@@ -94,7 +94,10 @@ vector — flag-first invocations dispatch.
 `GATE_PROOF_STALE` (attested gate hash vs installed; silent when the
 stub finding owns the surface) / `DEBT_ROW_INCOMPLETE` /
 `DEBT_EXPIRED` / `PROPOSAL_OPEN` (open evolve proposals stay
-visible). Failures carry a `fix`; on error/warning that is
+visible) / `SHADOW_STANDING` (every local override displacing a
+shipped default, with its age from the journal; threshold-free by
+ruling — the human judges, both readings travel with the finding).
+Failures carry a `fix`; on error/warning that is
 mechanically enforced by an AST-walking test.
 
 **Seed files** (`PROGRESS.md`, `DEBT.md`): install-if-absent,
@@ -103,9 +106,10 @@ agent-owned, never drift-tracked; removal leaves them and says so
 
 **Contracts** (`spec/`): cli-envelope v0.3 · citation v0.1
 (ids, markers, store, misreadings) · component-manifest v0.2
-(`addresses:`) · field-report v0.2 (accepted 2026-08-31: component-
+(`addresses:`) · field-report v0.3 (accepted 2026-08-31: component-
 scoped facts only, case-before-fix intake, publish as the signing
-boundary, submission under no-unattended-egress) · host-adapter
+boundary, submission under no-unattended-egress; SHADOW_STANDING
+threshold-free by ruling) · host-adapter
 v0.1 · inspection v0.2 · journal v0.5
 (append-only; `note`/`attest`/`proposal`/`verdict` kinds; read path
 with surfaces) ·

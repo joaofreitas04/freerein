@@ -8,9 +8,10 @@ session re-derives it — or worse, trusts it.
 ## Current state
 
 Clean baseline as of 2026-08-31 (evening session). `bash
-scripts/verify` GREEN, `rein doctor` 0 findings, all work committed
-(local, not pushed — the owner pushes). No TODO/FIXME markers in
-the tree. The repo is self-hosted: CLAUDE.md is rendered by rein —
+scripts/verify` GREEN; `rein doctor` reports exactly one finding,
+the expected `SHADOW_STANDING` advisory on the adopted verify gate
+(info — local policy, no action). All work committed and pushed.
+No TODO/FIXME markers in the tree. The repo is self-hosted: CLAUDE.md is rendered by rein —
 edit `.rein/overrides/`, never CLAUDE.md or scripts/verify directly,
 then `rein apply --yes`.
 
@@ -49,11 +50,14 @@ survive in the code: what is next, what is unproven, what is blocked.
    mandatory flags; written to `.rein/out/report/`, never
    transmitted — `off` is the only submission level) and
    rein-diagnose 0.5 (disposition read from the lock at attribution;
-   shipped-component closes with a report, never a silent fork).
-   Remaining, blocked on a ruling: the `SHADOW_STANDING` doctor
-   advisory — the spec says "a threshold age" without a number (see
-   Blocked below); and the propose/auto submission transport, which
-   waits for a real report to demand it.
+   shipped-component closes with a report, never a silent fork), and
+   the `SHADOW_STANDING` doctor advisory — ruled threshold-free
+   2026-08-31 (spec amended to v0.3): every standing shadow listed
+   with its journal-read age, both readings attached, the human
+   judges; a number can be earned once real ages exist. On THIS repo
+   the advisory correctly fires once, for the adopted verify gate —
+   expected, not a regression. Remaining: only the propose/auto
+   submission transport, which waits for a real report to demand it.
 5. **Setup deepening** — next up, and it needs scoping before code
    (see Blocked): inspect breadth (hooks, skills directories, state
    files, prior installs — [real 15]'s skills-dir half is consumed;
@@ -230,16 +234,6 @@ an unrelated change:
 
 - **Ruling: the paired eval design** (`spec/eval.md` v0.1, drafted
   2026-08-31). Accept, amend, or redirect; implementation waits.
-- **Ruling: the SHADOW_STANDING threshold age.** The accepted
-  field-report spec says "beyond a threshold age" with no number.
-  Options: (a) a fixed default (30d is the conventional reach, and
-  an unearned number); (b) configurable in harness.yaml with a
-  stated default; (c) no threshold — the advisory lists every
-  standing shadow with its age and the human judges (requires a
-  spec amendment, since v0.2 says "threshold"). Recommendation: (c)
-  amended into the spec — it matches "a cutoff nobody measured is
-  an unearned number", and doctor advisories already carry
-  misreadings; revisit once real shadow ages exist to measure.
 - **Scoping: § Next item 5 (setup deepening).** Which inspect
   surfaces earn table rows without fresh field evidence (hooks?
   state files? prior-install markers — which?); the
