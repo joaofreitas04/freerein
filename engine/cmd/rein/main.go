@@ -42,6 +42,8 @@ commands:
 flags:
   --dir <path>       target repo (default: cwd)
   --adapter <name>   host adapter for init (default: claude-code)
+  --profile <name>   core profile for init: standard, or minimal — the
+                     control condition, not a starter tier
   --registry <src>   registry index URL or path (overrides harness.yaml
                      and the built-in default registry)
   --yes              confirm side-effectful commands
@@ -52,6 +54,7 @@ func main() {
 	fs := flag.NewFlagSet("rein", flag.ContinueOnError)
 	dir := fs.String("dir", ".", "target repo")
 	adapterName := fs.String("adapter", "claude-code", "host adapter (init)")
+	profile := fs.String("profile", "standard", "core profile for init (standard | minimal)")
 	registrySrc := fs.String("registry", "", "registry index URL or path")
 	yes := fs.Bool("yes", false, "confirm side effects")
 	kind := fs.String("kind", "", "journal: exact kind filter")
@@ -87,7 +90,7 @@ func main() {
 
 	switch cmd {
 	case "init":
-		g.Init(e, *adapterName)
+		g.Init(e, *adapterName, *profile)
 	case "plan":
 		g.Plan(e)
 	case "apply":

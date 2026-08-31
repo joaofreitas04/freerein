@@ -48,11 +48,11 @@ func TestWalkingSkeleton(t *testing.T) {
 		t.Fatalf("plan before init: want NOT_INITIALIZED, got ok=%v %v", e.OK, codes(e))
 	}
 	// init
-	if e := run("init", func(e *envelope.Envelope) { g.Init(e, "claude-code") }); !e.OK {
+	if e := run("init", func(e *envelope.Envelope) { g.Init(e, "claude-code", "standard") }); !e.OK {
 		t.Fatalf("init failed: %v", codes(e))
 	}
 	// double init refused
-	if e := run("init", func(e *envelope.Envelope) { g.Init(e, "claude-code") }); e.OK || !has(e, "ALREADY_INITIALIZED") {
+	if e := run("init", func(e *envelope.Envelope) { g.Init(e, "claude-code", "standard") }); e.OK || !has(e, "ALREADY_INITIALIZED") {
 		t.Fatalf("double init: want ALREADY_INITIALIZED, got ok=%v %v", e.OK, codes(e))
 	}
 	// apply without yes: confirm required, nothing written

@@ -1,6 +1,24 @@
-# Resolution — contract v0.4 (draft)
+# Resolution — contract v0.5 (draft)
 
 How `harness.yaml` (intent) becomes a resolved file set.
+
+## Profiles
+
+`profile:` in `harness.yaml` selects which core components compose —
+`standard` (the default: the full core) or `minimal`
+(`instructions-minimal` + `verification-gate`, the floor: done-means-
+verified and the managed-files rule, nothing else). The minimal
+profile is **the control condition, never a starter tier**
+(docs/lifecycle.md §2.6): harness components stack sub-additively, so
+any claim that a richer composition helps is a comparison against
+this floor on the repo's own work. Overrides, presets, and extensions
+apply under every profile — the comparison varies the shipped core
+while holding the project's own configuration constant. Switching
+profiles flows through ordinary plan/apply: richer content is removed
+with refcounting, agent-owned seeds are left behind (`SEED_LEFT`),
+and the switch lands in the journal, where a paired measurement can
+read exactly when the condition changed. An unknown profile is
+refused with the known list.
 
 ## Layer order (highest priority first)
 

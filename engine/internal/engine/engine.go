@@ -35,9 +35,22 @@ const (
 
 type Config struct {
 	Adapter    string   `yaml:"adapter"`
+	Profile    string   `yaml:"profile,omitempty"` // "" = standard
 	Registry   string   `yaml:"registry,omitempty"`
 	Presets    []string `yaml:"presets"`
 	Extensions []string `yaml:"extensions"`
+}
+
+// profiles select which core components compose (spec/resolution.md).
+// minimal is the control condition of docs/lifecycle.md §2.6 — the
+// floor every richer profile must beat on the repo's own work — never
+// a starter tier. Overrides, presets, and extensions apply under
+// every profile: the comparison varies the shipped core while holding
+// the project's own configuration constant.
+var profiles = map[string][]string{
+	"standard": {"instructions-base", "verification-gate", "state-base",
+		"procedure-setup", "procedure-diagnose", "procedure-decide"},
+	"minimal": {"instructions-minimal", "verification-gate"},
 }
 
 type Engine struct {
@@ -68,7 +81,7 @@ func (g *Engine) readConfig() (*Config, error) {
 
 // ---------- init ----------
 
-func (g *Engine) Init(e *envelope.Envelope, adapterName string) {
+func (g *Engine) Init(e *envelope.Envelope, adapterName, profile string) {
 	cfgPath := filepath.Join(g.Repo, ConfigName)
 	if _, err := os.Stat(cfgPath); err == nil {
 		e.Fail("ALREADY_INITIALIZED", ConfigName+" already exists in this repo",
@@ -79,7 +92,24 @@ func (g *Engine) Init(e *envelope.Envelope, adapterName string) {
 		e.Fail("UNKNOWN_ADAPTER", err.Error(), "run `rein adapters` to list available adapters")
 		return
 	}
-	cfg := fmt.Sprintf("# FreeRein harness declaration — see spec/resolution.md\nadapter: %s\npresets: []\nextensions: []\n", adapterName)
+	if profile == "" {
+		profile = "standard"
+	}
+	if _, ok := profiles[profile]; !ok {
+		known := make([]string, 0, len(profiles))
+		for name := range profiles {
+			known = append(known, name)
+		}
+		sort.Strings(known)
+		e.Fail("INVALID_ARGUMENT", "unknown profile "+profile,
+			"pass --profile with one of: "+strings.Join(known, ", "))
+		return
+	}
+	profileLine := ""
+	if profile != "standard" {
+		profileLine = fmt.Sprintf("profile: %s\n", profile)
+	}
+	cfg := fmt.Sprintf("# FreeRein harness declaration — see spec/resolution.md\nadapter: %s\n%spresets: []\nextensions: []\n", adapterName, profileLine)
 	if err := os.WriteFile(cfgPath, []byte(cfg), 0o644); err != nil {
 		e.Fail("WRITE_FAILED", err.Error(), "check permissions on the target repo")
 		return
@@ -90,6 +120,11 @@ func (g *Engine) Init(e *envelope.Envelope, adapterName string) {
 	e.Result = map[string]any{"created": []string{ConfigName, ".rein/.gitignore"}, "adapter": adapterName}
 	e.Diag(envelope.Info, "INITIALIZED", "harness declared; nothing installed yet",
 		"run `rein plan` to see what `rein apply` would install")
+	if profile == "minimal" {
+		e.Diag(envelope.Info, "PROFILE_CONTROL",
+			"minimal is the control condition, not a starter tier — richer profiles must beat it on this repo's own work",
+			"")
+	}
 }
 
 // ---------- resolution pipeline ----------
@@ -118,16 +153,39 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 		e.Fail("UNKNOWN_ADAPTER", err.Error(), "fix the adapter field in "+ConfigName)
 		return nil
 	}
-	core, err := component.LoadAll(g.Content, "core")
+	allCore, err := component.LoadAll(g.Content, "core")
 	if err != nil {
 		e.Fail("CORE_INVALID", err.Error(), "this is an engine bug — report it")
 		return nil
+	}
+	profile := cfg.Profile
+	if profile == "" {
+		profile = "standard"
+	}
+	members, ok := profiles[profile]
+	if !ok {
+		known := make([]string, 0, len(profiles))
+		for name := range profiles {
+			known = append(known, name)
+		}
+		sort.Strings(known)
+		e.Fail("CONFIG_INVALID", "unknown profile "+profile,
+			"set profile: in "+ConfigName+" to one of: "+strings.Join(known, ", "))
+		return nil
+	}
+	var core []*component.Loaded
+	for _, c := range allCore {
+		for _, m := range members {
+			if c.Manifest.Name == m {
+				core = append(core, c)
+			}
+		}
 	}
 	// layer order per spec/resolution.md: overrides > presets > extensions > core
 	layers := []resolve.Layer{}
 	sources := map[string]lockfile.LayerRef{
 		"overrides": {ID: "overrides", Source: "local"},
-		"core":      {ID: "core", Source: "embedded@" + Version},
+		"core":      {ID: "core", Source: "embedded@" + Version + "/" + profile},
 	}
 	if ov := g.loadOverrides(e); ov != nil {
 		layers = append(layers, resolve.Layer{ID: "overrides", Components: []*component.Loaded{ov}})

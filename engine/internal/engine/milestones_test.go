@@ -19,7 +19,7 @@ func newRepo(t *testing.T, adapter string) (*engine.Engine, string) {
 	}
 	g := &engine.Engine{Repo: repo, Content: content.FS}
 	e := envelope.New("init")
-	g.Init(e, adapter)
+	g.Init(e, adapter, "standard")
 	if !e.OK {
 		t.Fatalf("init failed: %+v", e.Diagnostics)
 	}

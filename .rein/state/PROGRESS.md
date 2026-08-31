@@ -22,9 +22,25 @@ survive in the code: what is next, what is unproven, what is blocked.
 evolve, and evolve's mechanics do not land until its substrates
 exist:
 
-1. Minimal profile as a shipped control mode — the last named
-   observe-adjacent item; after it, evolve's mechanics (paired
-   measurement, held-out acceptance) are unblocked for design.
+1. Evolve-stage design (lifecycle §2: paired measurement, held-out
+   acceptance, change-budget discipline). Every substrate it named
+   as a prerequisite now exists — journal, gate-can-fail, citation
+   telemetry, cost surfaces, and the minimal profile as the control
+   condition. This is a founding-positions-to-mechanics design pass
+   like citation telemetry was; nothing in it should land without a
+   ruling.
+
+Minimal profile shipped 2026-08-31 (resolution v0.5): `profile:` in
+harness.yaml selects core membership — standard (full) or minimal
+(instructions-minimal 0.1 + verification-gate: the floor, 809 bytes
+always-tier on a fresh install vs 2290 standard on this repo, zero
+per-session and conditional costs). The control condition of
+lifecycle §2.6, stated as such by init (`PROFILE_CONTROL`); switching
+flows through plan/apply, leaves agent-owned seeds (SEED_LEFT), and
+lands in the journal so a paired measurement can read when the
+condition changed. Overrides/extensions apply under every profile:
+the comparison varies the shipped core, holds project config
+constant.
 
 Cost surfaces shipped 2026-08-31 (resolution v0.4): plan's `costs`
 object tiers every installed artifact by when its price is paid —

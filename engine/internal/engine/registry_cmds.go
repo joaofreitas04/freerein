@@ -18,6 +18,9 @@ func (g *Engine) writeConfig(cfg *Config) error {
 	var b strings.Builder
 	b.WriteString("# FreeRein harness declaration — see spec/resolution.md\n")
 	fmt.Fprintf(&b, "adapter: %s\n", cfg.Adapter)
+	if cfg.Profile != "" && cfg.Profile != "standard" {
+		fmt.Fprintf(&b, "profile: %s\n", cfg.Profile)
+	}
 	if cfg.Registry != "" {
 		fmt.Fprintf(&b, "registry: %q\n", cfg.Registry)
 	}

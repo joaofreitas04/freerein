@@ -1,0 +1,17 @@
+name: instructions-minimal
+kind: core
+version: 0.1.0
+subsystem: instructions
+rung: instruction
+rent:
+  class: amplifier
+provides:
+  - AGENTS.md.d/00-base.md
+requires: []
+conflicts: []
+description: >
+  The floor: verification and the managed-files rule, nothing else.
+  This is the control condition of docs/lifecycle.md §2.6 — not a
+  starter tier. Every richer profile must beat it on the repo's own
+  work; state discipline, scope rules, skills, and telemetry are the
+  content whose value the comparison measures.

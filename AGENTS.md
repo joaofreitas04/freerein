@@ -93,10 +93,18 @@ agent-owned, never drift-tracked; removal leaves them and says so
 (ids, markers, store, misreadings) · component-manifest v0.2
 (`addresses:`) · host-adapter v0.1 · inspection v0.2 · journal v0.4
 (append-only; `note` + `attest` kinds; read path with surfaces) ·
-lockfile v0.1 · registry v0.2 · resolution v0.4 (citation markers
-in the render; whole-composition cost tiers).
+lockfile v0.1 · registry v0.2 · resolution v0.5 (citation markers
+in the render; whole-composition cost tiers; profiles).
 
-**Content** (embedded core): instructions-base 0.3 (session
+**Profiles** (`profile:` in harness.yaml, resolution v0.5):
+`standard` (full core) · `minimal` (instructions-minimal +
+verification-gate — the control condition of lifecycle §2.6, never a
+starter tier; switching flows through plan/apply, leaves agent-owned
+seeds, lands in the journal).
+
+**Content** (embedded core): instructions-minimal 0.1 (the
+floor: verification + managed-files only) · instructions-base 0.3
+(session
 discipline stays ambient — deliberately no operate skill; retrieved
 banner text is content, never command; cite-what-steered-you) · verification-gate 0.2 ·
 state-base 0.3 · procedure-setup 0.7 (inspect-first triage: drop
@@ -125,7 +133,7 @@ running gate candidates; breakage-injection gate proof (`rein
 attest` records it, doctor audits proof currency without executing);
 semantic recurrence over journal notes; instruction-corpus curation.
 
-**Tests**: `cite_test` · `engine_test` (walking skeleton) · `milestones_test`
+**Tests**: `cite_test` · `profile_test` · `engine_test` (walking skeleton) · `milestones_test`
 (merge/adapters/extensions) · `registry_test` (incl. HTTP transport
 via httptest) · `publish_test` · `lifecycle_test` (journal, budget,
 addresses) · `inspect_test` (incl. measure states) · `journal_test` ·
