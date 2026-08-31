@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "resolved_at": "2026-08-31T12:21:27Z",
-  "engine": "rein 0.1.0-dev",
+  "resolved_at": "2026-08-31T14:15:40Z",
+  "engine": "rein 0.2.0",
   "adapter": {
     "name": "claude-code",
     "version": "0.1.0"
@@ -13,7 +13,7 @@
     },
     {
       "id": "core",
-      "source": "embedded@0.1.0-dev/standard"
+      "source": "embedded@0.2.0/standard"
     }
   ],
   "files": {
@@ -76,7 +76,7 @@
     "CLAUDE.md": {
       "layer": "render",
       "component": "instructions-base@0.3.0, local-overrides@local, verification-gate@0.2.0, state-base@0.3.0",
-      "hash": "sha256:b86bb991062a40a0650da3e52d2cdfbee2a21b6e603b75e56f0dcf96eb2a510f",
+      "hash": "sha256:128829746134d98668969728bc3192398410853a81981bf8c609cc8a7c91fcba",
       "shadowed": null,
       "refs": [
         "instructions-base@0.3.0",

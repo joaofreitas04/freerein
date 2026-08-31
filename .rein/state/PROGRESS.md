@@ -95,7 +95,88 @@ shipped control mode; release automation.
 
 ## In flight
 
-Nothing.
+Field test 2: with the owner (2026-08-31). The target is a private
+multi-app Angular/Nx workspace of the owner's — its name and paths
+stay out of this public repo (the owner knows which; the bench path
+below locates it locally). The owner runs the real install and
+interview
+themselves — their explicit ruling, and the setup interview is
+designed around rulings only they can make. rein 0.2.0 (released
+binary, checksum-verified) is on their PATH (~/.local/bin/rein).
+
+A parallel session, unaware of that ruling, completed a full
+autonomous pass on a scratch clone (bench at ~/.cache/ft2/<target>,
+1.6GB, kept as evidence; the real repo verified untouched). Its
+interview rulings are VOID — defaults for demonstration, decided by
+nobody — but its engine-side results are objective and are merged
+into the findings below, marked [bench]. The bench's DEBT.md holds
+target-side facts for the owner's real install (format drift: 325
+files fail nx format:check; system pnpm crashes under volta node 20;
+fresh clones need the codegen script before anything compiles).
+
+## Field test 2 — preliminary findings (engine-side, from the dry run)
+
+Facts about `rein inspect` 0.2.0 against the real target tree, before
+any interview; each is detection-table material ("grow them from real
+setup runs"):
+
+1. **`tests.candidates: null` while `jest.config.ts` is detected and
+   the test-runner affordance is true.** The report names configs but
+   derives no runnable command, so setup step 2's "run each
+   candidate" gets zero engine help and the human ends up naming
+   commands — which the skill explicitly says should never happen.
+   Angular/Nx-style runners (commands live in angular.json project
+   targets / package.json scripts, not a config file that IS the
+   command) are outside the current tables.
+2. **`monorepo: false` on a multi-app workspace** (apps/* + libs/*,
+   pnpm). Detection presumably keys on workspace manifests
+   (pnpm-workspace/lerna/nx.json) and misses plain angular.json
+   multi-project layouts.
+3. **Duplicate share is a quarter of the tree** (806 of 3153 files),
+   dominated by per-app scaffold config: test-setup.ts ×12,
+   tsconfig.json ×12, tsconfig.spec.json ×11, .eslintrc.json ×7.
+   Honest signal (real config duplication), but scaffold-identical
+   config and copy-pasted source land in one bucket; whether the
+   measure should distinguish them is a ruling for after more repos.
+4. **`instruction_corpus` found only CLAUDE.md** (1272 bytes) and
+   missed root-level CONTEXT.md and product-named notes files — instruction-ish
+   files a triage should at least see. The filename table is
+   deliberately curated; CONTEXT.md is common enough to be a
+   candidate.
+
+Positive signals from the same run: inspect on 3164 files took 74ms
+pre-init with a well-formed envelope and offload; classified/high-
+touch caps announced themselves in notes; high-touch top hit
+(an `apps/<app>/version.json`, ×75 commits) is a genuinely useful churn
+fact.
+
+From the completed bench pass, additional and confirming [bench]:
+
+5. **Skill/engine mismatch on EXISTS_UNMANAGED**: rein-setup step 6
+   says show the warning at plan time; the engine emits it at apply
+   only (plan carries `unmanaged[]` silently in the result). Align
+   one, deliberately. The guarantee itself held byte-for-byte: apply
+   left the pre-existing CLAUDE.md alone and said so.
+6. **Step 7 needs wording against same-chain attests.** The bench
+   pass attested in the same command chain as an unproven breakage —
+   the proposed compile check silently passed a broken unimported
+   file (tsconfig `files:[main.ts]` checks the import graph, not the
+   tree; fixed on the editor config). GATE_PROOF_STALE caught the
+   premature attest the moment the gate changed — the standing
+   check's first field catch, on its own author — but a false attest
+   on a never-changing gate would stand. Candidate skill text:
+   "attest only after watching every breakage fail, never in the
+   same command chain as the proof".
+7. **Measure aggregate readability**: the 806 duplicates are
+   dominated by per-app scaffold configs (tsconfig ×12, test-setup
+   ×12); the capped classified list hides that story — candidate:
+   group-by-basename note in the measure.
+8. **Held under load** [bench]: envelope discipline everywhere, 74ms
+   inspect on 3k files, plan priced the real corpus (3.6KB render,
+   11% of budget; costs tiers populated), triage buckets fit an
+   already-curated 34-line corpus (drop 1 / demote 1 / keep / flag
+   root notes), and the breakage proof caught a real gate flaw
+   before it shipped.
 
 ## Noted, not yet actioned
 
