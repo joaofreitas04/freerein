@@ -1,4 +1,4 @@
-# Inspection — contract v0.2 (draft)
+# Inspection — contract v0.3
 
 `rein inspect` is the discovery half of setup made mechanical: a
 read-only sweep of the target repo that reports what is *there*, so
@@ -25,7 +25,8 @@ to the human. Detection is computation; execution is judgment.
 | `ci` | CI configuration files — checks some system already enforces are gate candidates with provenance |
 | `lint_format` | linter and formatter configurations |
 | `instruction_corpus` | every agent instruction file (root and nested, bounded walk), with byte sizes — the input to setup's triage |
-| `config_surfaces` | agent-config files more than one tool commonly writes — the input to the ownership interview |
+| `config_surfaces` | agent-config files and directories more than one tool commonly writes, including per-host packaging surfaces — the input to the ownership interview |
+| `prior_install` | whether the tree already carries this product's own harness (manifests, journal, base/overrides dirs), with the marker paths as evidence — a repo with an incumbent is audited, never treated as naked; the detector never counts its own offloaded output |
 | `high_touch` | the most-changed paths from local git history — an enumerated map of where erosion happens (omitted, with a note, when history is unavailable) |
 | `docs_tree` | whether a docs territory exists for the instruction file to be a map of |
 | `affordances` | the boolean projection of all of the above, aligned with the probe vocabulary |

@@ -104,6 +104,54 @@ func TestInspectFamilies(t *testing.T) {
 	}
 }
 
+// The incumbent stratum is enumerable: per-host packaging surfaces
+// land in config_surfaces (the ownership interview's input), and a
+// prior install of the product itself is a fact the report states
+// before init ever runs.
+func TestInspectIncumbentBreadth(t *testing.T) {
+	repo := t.TempDir()
+	seedFile(t, repo, ".claude-plugin/plugin.json", "{}")
+	seedFile(t, repo, ".opencode/skill/s/SKILL.md", "x")
+	seedFile(t, repo, "gemini-extension.json", "{}")
+	seedFile(t, repo, ".agents/skills/s/SKILL.md", "x")
+	g := &engine.Engine{Repo: repo, Content: content.FS}
+	e := envelope.New("inspect")
+	g.Inspect(e)
+	if !e.OK {
+		t.Fatalf("inspect failed: %+v", e.Diagnostics)
+	}
+	b, _ := os.ReadFile(filepath.Join(repo, ".rein/out/inspect.json"))
+	var r engine.InspectReport
+	if err := json.Unmarshal(b, &r); err != nil {
+		t.Fatal(err)
+	}
+	surfaces := strings.Join(r.ConfigSurfaces, ";")
+	for _, want := range []string{".claude-plugin/", ".opencode/", "gemini-extension.json", ".agents/skills/"} {
+		if !strings.Contains(surfaces, want) {
+			t.Fatalf("per-host packaging surface %q must be listed, got %v", want, r.ConfigSurfaces)
+		}
+	}
+	if r.PriorInstall.Present {
+		t.Fatalf("no prior install here, got %+v", r.PriorInstall)
+	}
+
+	seedFile(t, repo, "harness.yaml", "adapter: claude-code\n")
+	seedFile(t, repo, ".rein/overrides/.keep", "")
+	e = envelope.New("inspect")
+	g.Inspect(e)
+	b, _ = os.ReadFile(filepath.Join(repo, ".rein/out/inspect.json"))
+	if err := json.Unmarshal(b, &r); err != nil {
+		t.Fatal(err)
+	}
+	if !r.PriorInstall.Present || len(r.PriorInstall.Evidence) == 0 {
+		t.Fatalf("a prior install of the product is a fact with evidence, got %+v", r.PriorInstall)
+	}
+	ev := strings.Join(r.PriorInstall.Evidence, ";")
+	if !strings.Contains(ev, "harness.yaml") {
+		t.Fatalf("evidence must name the manifests found, got %v", r.PriorInstall.Evidence)
+	}
+}
+
 // requires-gating and inspect share detection: a component requiring
 // test-runner fails plan in a bare repo and passes once tests exist.
 func TestProbeGating(t *testing.T) {

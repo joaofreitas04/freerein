@@ -37,7 +37,14 @@ type Churn struct {
 
 // InspectFormatVersion is semver'd with spec/inspection.md rule 5:
 // consumers may branch on it, and additions bump the minor.
-const InspectFormatVersion = "0.2.0"
+const InspectFormatVersion = "0.3.0"
+
+// PriorInstall reports whether this tree already carries the
+// product's own harness, with the marker paths found.
+type PriorInstall struct {
+	Present  bool     `json:"present"`
+	Evidence []string `json:"evidence,omitempty"`
+}
 
 type LangStat struct {
 	Language string `json:"language"`
@@ -83,6 +90,7 @@ type InspectReport struct {
 	LintFormat     []string        `json:"lint_format"`
 	Instruction    []CorpusFile    `json:"instruction_corpus"`
 	ConfigSurfaces []string        `json:"config_surfaces"`
+	PriorInstall   PriorInstall    `json:"prior_install"`
 	HighTouch      []Churn         `json:"high_touch,omitempty"`
 	DocsTree       string          `json:"docs_tree,omitempty"`
 	Affordances    map[string]bool `json:"affordances"`
@@ -136,7 +144,25 @@ var rootInstructionFiles = []string{
 var configSurfaces = []string{
 	".mcp.json", ".claude/settings.json", ".claude/settings.local.json",
 	".claude/skills/", // a directory more than one tool installs into [real 15]
+	".agents/skills/", // the codex-side skills dir this product itself writes
 	".gemini/settings.json", ".cursor/mcp.json",
+	// per-host packaging surfaces: one methodology shipped to many
+	// hosts leaves one of these per host, and each is a write surface
+	// the ownership interview must see
+	".claude-plugin/", ".codex-plugin/", ".cursor-plugin/",
+	".devin-plugin/", ".hermes-plugin/", ".kimi-plugin/",
+	".opencode/", ".pi/", "gemini-extension.json",
+}
+
+// priorInstallMarkers: the product's (or a predecessor's) own
+// manifests — a repo that already carries a harness must be audited,
+// not treated as naked; inspect states the fact before init runs.
+// Deliberately not the bare .rein/ dir: inspect's own offloaded
+// report lives there, and a detector must never detect its own
+// droppings.
+var priorInstallMarkers = []string{
+	"harness.yaml", "harness.lock",
+	".rein/journal.jsonl", ".rein/base/", ".rein/overrides/",
 }
 
 // directories the bounded walk never enters
@@ -406,6 +432,8 @@ func (g *Engine) buildInspectReport() *InspectReport {
 	r.LintFormat = g.detectFiles(lintFormatConfigs)
 	r.Instruction = g.detectInstructionCorpus()
 	r.ConfigSurfaces = g.detectFiles(configSurfaces)
+	r.PriorInstall.Evidence = g.detectFiles(priorInstallMarkers)
+	r.PriorInstall.Present = len(r.PriorInstall.Evidence) > 0
 	var note string
 	r.HighTouch, note = g.detectHighTouch()
 	if note != "" {
