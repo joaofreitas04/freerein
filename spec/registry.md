@@ -1,4 +1,4 @@
-# Registry — contract v0.1 (draft)
+# Registry — contract v0.2 (draft)
 
 A registry is a **static JSON index** over HTTPS (or a filesystem
 path — used for local/private registries and tests). No server-side
@@ -63,5 +63,22 @@ and three-way merge live. An upgrade over a locally edited file is
 therefore an ordinary merge, not a special case.
 
 Registry selection: `--registry` flag > `registry:` in
-`harness.yaml`. There is no default registry yet; commands that need
-one fail with `NO_REGISTRY` and the fix.
+`harness.yaml` > the built-in default,
+`https://joaofreitas04.github.io/freerein/index.json`. Selection can
+therefore never come up empty, and v0.1's `NO_REGISTRY` diagnostic is
+retired with this version — an unknown component against the default
+registry fails as what it is (`NOT_IN_REGISTRY`), not as a missing
+setting. Only the commands in the table above ever touch the network;
+a default URL changes nothing about plan/apply/doctor staying
+offline.
+
+## The official registry
+
+The default URL serves the `registry/` directory committed to the
+FreeRein repo, verbatim, via GitHub Pages: `index.json` plus the
+sha-pinned archives beside it. It is written only by `rein-publish`
+(deterministic archives; republishing changed content without a
+version bump is refused), so publishing is a reviewed commit like any
+other change — there is deliberately no generation step at deploy
+time. The index launched empty: core content ships inside the engine
+binary, and the registry is the extension/preset channel.

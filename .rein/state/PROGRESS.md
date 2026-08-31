@@ -72,6 +72,11 @@ an unrelated change:
 - inspect's detection tables (manifests, test/lint/CI configs) are a
   curated list, not exhaustive; grow them from real setup runs, not
   speculation.
+- The official registry is live but empty; what to publish first is a
+  deliberate product decision (a spec-flow procedure is the obvious
+  candidate), not something to bundle into infrastructure work. Until
+  a first component is published, the archive-fetch path over live
+  HTTPS rests on the httptest coverage, not a production run.
 - Whether `rein doctor` clean belongs in the gate is unsettled. This
   repo is self-hosted, so a hand-edited CLAUDE.md is a real failure
   mode that only doctor catches — but `scripts/verify` does not run
@@ -83,11 +88,6 @@ an unrelated change:
 
 ## Blocked / needs a human
 
-- **Registry hosting.** No default registry URL and no hosted
-  `index.json` anywhere, so `rein add` is unusable without an
-  explicit `--registry <url-or-path>`. `NO_REGISTRY` is the correct
-  well-formed error, but the product surface stays closed until a
-  hosting decision is made (GitHub Pages vs. releases).
 - **Codex skill frontmatter dialect.** Still a declared degradation
   in `content/adapters/codex.yaml` (`user_invoked_flag: ""`,
   "invocation-governance flags unverified for this host"). Needs

@@ -6,6 +6,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -236,5 +238,47 @@ func TestRegistryShaMismatch(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(repo, ".rein/vendor/reg-ext@1.0.0")); err == nil {
 		t.Fatal("a refused fetch must leave no vendor dir behind")
+	}
+}
+
+// The debt ledger's evidence line was "registry.httpGet is
+// unexercised". These two tests retire it: the same lifecycle and the
+// same refusal, over a real HTTP server instead of a filesystem path.
+func TestRegistryOverHTTP(t *testing.T) {
+	g, repo := newRepo(t, "claude-code")
+	regDir := filepath.Join(repo, "registry-src")
+	writeRegistry(t, regDir, map[string]string{"1.0.0": "## Reg rule\n\nBe reg v1.\n"})
+	srv := httptest.NewServer(http.FileServer(http.Dir(regDir)))
+	defer srv.Close()
+
+	e := envelope.New("add")
+	g.Add(e, "reg-ext", srv.URL+"/index.json")
+	if !e.OK {
+		t.Fatalf("add over HTTP failed: %+v", e.Diagnostics)
+	}
+	if _, err := os.Stat(filepath.Join(repo, ".rein/vendor/reg-ext@1.0.0/component.yaml")); err != nil {
+		t.Fatal("add over HTTP must vendor the component")
+	}
+}
+
+func TestRegistryOverHTTPShaMismatch(t *testing.T) {
+	g, repo := newRepo(t, "claude-code")
+	regDir := filepath.Join(repo, "registry-src")
+	writeRegistry(t, regDir, map[string]string{"1.0.0": "## Reg rule\n\nBe reg v1.\n"})
+	archive := filepath.Join(regDir, "reg-ext-1.0.0.tar.gz")
+	b, _ := os.ReadFile(archive)
+	if err := os.WriteFile(archive, append(b, 0x00), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	srv := httptest.NewServer(http.FileServer(http.Dir(regDir)))
+	defer srv.Close()
+
+	e := envelope.New("add")
+	g.Add(e, "reg-ext@1.0.0", srv.URL+"/index.json")
+	if e.OK || !diagCodes(e)["FETCH_FAILED"] {
+		t.Fatalf("sha mismatch over HTTP must refuse, got %+v", e.Diagnostics)
+	}
+	if _, err := os.Stat(filepath.Join(repo, ".rein/vendor/reg-ext@1.0.0")); err == nil {
+		t.Fatal("a refused HTTP fetch must leave no vendor dir behind")
 	}
 }

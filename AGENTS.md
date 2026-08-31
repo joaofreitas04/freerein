@@ -37,6 +37,7 @@ change with a version bump, never a silent edit.
 | Engine (Go) | `engine/` |
 | Core content, procedures, adapters | `content/` |
 | Registry publishing (archives + index) | `engine/cmd/rein-publish`, `engine/internal/publish` |
+| Official registry (committed output, served by Pages) | `registry/` |
 
 ## Commands
 
@@ -163,3 +164,13 @@ announce-only infos; nine empty-fix sites resolved (three got real
 fixes, one an *error*). rein-diagnose 0.3: drives `rein journal` for
 recurrence and records rulings via `rein note` — the loop closes both
 directions. Covered by `journal_test.go`, `fixlint_test.go`.
+Registry hosting DONE (2026-08-31e): repo made public; the committed
+`registry/` directory (empty index at launch — the registry is the
+extension channel, core ships in the binary) is served verbatim at
+https://joaofreitas04.github.io/freerein/ by a Pages workflow that
+deliberately runs no generation step; `DefaultRegistry` baked into
+the engine (selection: flag > harness.yaml > default;
+spec/registry.md v0.2, `NO_REGISTRY` retired as an impossible state);
+the HTTP transport exercised end to end by httptest-backed tests
+(fetch, sha verify, vendor, tamper refusal) and live against the
+Pages index. Debt ledger's registry row retired.

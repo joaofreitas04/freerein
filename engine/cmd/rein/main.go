@@ -39,7 +39,8 @@ commands:
 flags:
   --dir <path>       target repo (default: cwd)
   --adapter <name>   host adapter for init (default: claude-code)
-  --registry <src>   registry index URL or path (overrides harness.yaml)
+  --registry <src>   registry index URL or path (overrides harness.yaml
+                     and the built-in default registry)
   --yes              confirm side-effectful commands
   --human            human-readable output instead of the JSON envelope
 `
