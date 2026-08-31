@@ -177,7 +177,11 @@ func (g *Engine) detectToolchain() (langs, manifests []string, monorepo bool) {
 	return
 }
 
-func (g *Engine) detectTests() (configs []string, candidates []Candidate) {
+// candidateProjectCap bounds per-project candidate lists; the cut
+// announces itself in notes (spec/inspection.md rule 5).
+const candidateProjectCap = 5
+
+func (g *Engine) detectTests() (configs []string, candidates []Candidate, note string) {
 	for _, f := range testConfigs {
 		if g.fileExists(f) {
 			configs = append(configs, f)
@@ -193,8 +197,63 @@ func (g *Engine) detectTests() (configs []string, candidates []Candidate) {
 		var pkg struct {
 			Scripts map[string]string `json:"scripts"`
 		}
-		if json.Unmarshal(b, &pkg) == nil && strings.TrimSpace(pkg.Scripts["test"]) != "" {
-			candidates = append(candidates, Candidate{Command: "npm test", Source: "package.json scripts.test"})
+		if json.Unmarshal(b, &pkg) == nil {
+			names := make([]string, 0, len(pkg.Scripts))
+			for n := range pkg.Scripts {
+				names = append(names, n)
+			}
+			sort.Strings(names)
+			for _, n := range names {
+				if strings.TrimSpace(pkg.Scripts[n]) == "" {
+					continue
+				}
+				switch {
+				case n == "test":
+					candidates = append(candidates, Candidate{Command: "npm test", Source: "package.json scripts.test"})
+				case strings.HasPrefix(n, "test:"):
+					candidates = append(candidates, Candidate{Command: "npm run " + n, Source: "package.json scripts." + n})
+				}
+			}
+		}
+	}
+	// nx mediates its workspace's tasks and angular.json project
+	// entries may be path strings with targets living elsewhere, so
+	// nx.json's existence alone derives the canonical whole-workspace
+	// invocation — the same move as go.mod deriving `go test ./...`
+	// without promising tests exist [real 10]. Plain angular has no
+	// run-all; project test targets derive per-project candidates
+	// [bench 1].
+	if g.fileExists("nx.json") {
+		candidates = append(candidates, Candidate{Command: "npx nx run-many -t test", Source: "nx.json"})
+	} else if b, err := os.ReadFile(filepath.Join(g.Repo, "angular.json")); err == nil {
+		var ws struct {
+			Projects map[string]json.RawMessage `json:"projects"`
+		}
+		if json.Unmarshal(b, &ws) == nil {
+			var withTest []string
+			for name, raw := range ws.Projects {
+				var p struct {
+					Architect map[string]json.RawMessage `json:"architect"`
+					Targets   map[string]json.RawMessage `json:"targets"`
+				}
+				if json.Unmarshal(raw, &p) != nil {
+					continue
+				}
+				if _, ok := p.Architect["test"]; !ok {
+					if _, ok = p.Targets["test"]; !ok {
+						continue
+					}
+				}
+				withTest = append(withTest, name)
+			}
+			sort.Strings(withTest)
+			if len(withTest) > candidateProjectCap {
+				note = fmt.Sprintf("per-project test candidates capped at %d of %d angular.json test targets", candidateProjectCap, len(withTest))
+				withTest = withTest[:candidateProjectCap]
+			}
+			for _, name := range withTest {
+				candidates = append(candidates, Candidate{Command: "npx ng test " + name, Source: "angular.json projects." + name})
+			}
 		}
 	}
 	for _, f := range []string{"pytest.ini", "tox.ini", "conftest.py"} {
@@ -336,7 +395,11 @@ func (g *Engine) buildInspectReport() *InspectReport {
 	if measureNote != "" {
 		r.Notes = append(r.Notes, measureNote)
 	}
-	r.Tests.Configs, r.Tests.Candidates = g.detectTests()
+	var testsNote string
+	r.Tests.Configs, r.Tests.Candidates, testsNote = g.detectTests()
+	if testsNote != "" {
+		r.Notes = append(r.Notes, testsNote)
+	}
 	r.CI = g.detectCI()
 	r.LintFormat = g.detectFiles(lintFormatConfigs)
 	r.Instruction = g.detectInstructionCorpus()

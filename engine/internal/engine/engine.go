@@ -339,7 +339,7 @@ func (g *Engine) probe(name string) (bool, string) {
 		}
 		return false, "no .git directory — the target is not a git repository"
 	case "test-runner":
-		configs, candidates := g.detectTests()
+		configs, candidates, _ := g.detectTests()
 		if len(configs) > 0 || len(candidates) > 0 {
 			return true, ""
 		}
