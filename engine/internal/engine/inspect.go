@@ -135,6 +135,7 @@ var rootInstructionFiles = []string{
 
 var configSurfaces = []string{
 	".mcp.json", ".claude/settings.json", ".claude/settings.local.json",
+	".claude/skills/", // a directory more than one tool installs into [real 15]
 	".gemini/settings.json", ".cursor/mcp.json",
 }
 

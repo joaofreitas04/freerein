@@ -161,6 +161,25 @@ func TestFieldContextMdInCorpus(t *testing.T) {
 	}
 }
 
+// [real 15]: rein's installed skills ended up sharing .claude/skills/
+// with another tool's (stray duplicate dirs included) — a shared
+// write surface config_surfaces did not list, so the ownership
+// interview never saw it.
+func TestFieldSkillsDirIsConfigSurface(t *testing.T) {
+	repo := t.TempDir()
+	seedFile(t, repo, ".claude/skills/some-skill/SKILL.md", "---\nname: s\n---\n")
+	r := inspectReport(t, repo)
+	found := false
+	for _, s := range r.ConfigSurfaces {
+		if s == ".claude/skills/" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf(".claude/skills/ is a shared write surface and must be listed [real 15], got %v", r.ConfigSurfaces)
+	}
+}
+
 // [bench 1]: scripts named test:* are manifest-derived run commands
 // the same way scripts.test is; only exact "test" was in the table.
 func TestFieldScriptVariantCandidates(t *testing.T) {
