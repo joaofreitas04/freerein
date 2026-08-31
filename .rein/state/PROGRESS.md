@@ -44,7 +44,7 @@ survive in the code: what is next, what is unproven, what is blocked.
    a task set. The minimal profile is the shipped control arm
    waiting for its experiment, and evolve verdicts need a
    measurement stronger than citations-plus-journal can supply.
-4. **Field-report channel — designed 2026-08-31, awaiting ruling**
+4. **Field-report channel — ruled ACCEPTED by the owner 2026-08-31**
    (`spec/field-report.md` v0.2): local-vs-shipped attribution read
    from the lock, privacy-by-construction reports (component-scoped
    facts only), case-before-fix intake with a grow-only fixture
@@ -54,8 +54,11 @@ survive in the code: what is next, what is unproven, what is blocked.
    invariant: auto is structured-fields-only, per-destination,
    reset-on-upgrade, never headless, owner-file only, journaled.
    The procedure changes it requires (diagnose disposition step,
-   SHADOW_STANDING advisory, `rein report`) land only after the
-   ruling.
+   SHADOW_STANDING advisory, `rein report`) are now unblocked and
+   land when this list reaches them. Not covered by the ruling and
+   needing one at implementation time: the SHADOW_STANDING threshold
+   age (the spec says "a threshold age" without a number, and an
+   unmeasured cutoff is an unearned one).
 5. **Setup deepening**: inspect breadth (hooks, skills directories,
    state files, prior installs — [real 15] is the evidence),
    symlink resolution, a wired-vs-declared cross-check; allow/block

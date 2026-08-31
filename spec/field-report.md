@@ -1,4 +1,4 @@
-# Field report — contract v0.2 (draft, awaiting ruling)
+# Field report — contract v0.2 (accepted 2026-08-31)
 
 A diagnosis on an installed repo ends in one of two places. If the
 failing artifact is local configuration, the override is the whole
