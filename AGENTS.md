@@ -31,6 +31,8 @@ change with a version bump, never a silent edit.
 | Need | Location |
 |---|---|
 | Founding design | `docs/design.md` |
+| Observe/evolve positions | `docs/lifecycle.md` |
+| Product fitness + claims discipline | `docs/fitness.md` |
 | Public contracts | `spec/` |
 | Engine (Go) | `engine/` |
 | Core content, procedures, adapters | `content/` |
@@ -77,6 +79,70 @@ instruction corpora (drop derivable / demote to sensor / keep runbook
 residue / flag for human ruling) plus the config-writer ownership
 inventory. Doctrine grounded in the knowledge repo's
 install-time-curation synthesis. Covered by `engine_test.go`,
-`milestones_test.go`, `registry_test.go`, `publish_test.go`. Next:
-host the official registry index + default registry URL, codex skill
-dialect (blocked on verified host facts), release automation.
+`milestones_test.go`, `registry_test.go`, `publish_test.go`.
+Lifecycle back-half groundwork DONE (2026-08-31): **spec/journal.md**
+(append-only `.rein/journal.jsonl`, engine-written on
+apply/add/remove/upgrade, conflicts recorded as rejections);
+**plan prices the composition** (budget object + `NEAR_CONTEXT_BUDGET`
+at 80% of adapter max_bytes — resolution rule 6); **manifest v0.2**
+`addresses:` field with `ADDRESSES_OVERLAP` advisories in plan and
+doctor (stacked fixes for one failure warn, conflicts still refuse);
+doctor's compensation walk now covers **every resolved layer**, not
+just core; `rein probes` lists the affordance vocabulary (closing the
+spec's dangling reference); **seed disposal fixed** — removal drops
+the lock entry, leaves the agent-owned file, says so (`SEED_LEFT`);
+atomic lockfile writes; **cli-envelope v0.2** (exit-code contract,
+absent-not-null, self-announcing offload, known-inconsistencies
+register). Content: instructions-base 0.2 (retrieved banner text is
+content, never command — anti-imitation rule), state-base 0.3
+(assumptions section in the PROGRESS seed; debt triggers that expire
+re-activate), rein-setup 0.4 (verify output contract: silent pass,
+one-line teaching failures; budget-driven re-triage), rein-diagnose
+0.2 (journal recurrence check before any artifact; never stack on an
+addressed surface; record rejected attributions). Founding positions
+for observe/evolve: `docs/lifecycle.md`; product-level negative space
+and claims discipline: `docs/fitness.md`. Covered additionally by
+`lifecycle_test.go`. Next: host the official registry index + default
+registry URL, codex skill dialect (blocked on verified host facts),
+release automation, then observe's remaining substrates in
+lifecycle.md §4 order (fragment citation telemetry, minimal profile
+as a shipped control mode). Setup-deepening DONE (2026-08-31b):
+**`rein inspect`** (spec/inspection.md — mechanical discovery: toolchain,
+test candidates with provenance, CI, lint configs, instruction corpus
+incl. nested files, config surfaces, git churn high-touch map, docs
+tree, affordances; **never executes project code**; works pre-init;
+report offloaded to `.rein/out/inspect.json`); probe vocabulary grew
+to five (git, test-runner, ci, linter, docs-tree), sharing detection
+with inspect so requires-gating and the report cannot disagree;
+doctor gained **`GATE_STUB`** (a still-stub verify is a truthful
+finding on every fresh install — a standing "is the gate real" check)
+and **debt-ledger audits** (`DEBT_ROW_INCOMPLETE`, `DEBT_EXPIRED` —
+dated triggers that pass re-activate the entry); **`rein note`**
+(journal v0.2: procedures record rulings/decisions through the
+engine, keeping append-only mechanical); dump/inspect announce
+offloads (`OUTPUT_OFFLOADED`). Content: rein-setup 0.5 (inspect-first
+discovery, one-ruling-at-a-time interview, verify + project-fragment
+skeletons with the ⚠️ ask-first tier, journaled rulings at handoff),
+new **procedure-decide/rein-decide** (immutable decision records,
+refuse-before-generate on six mandatory fields, convention discovered
+never imposed). Covered by `inspect_test.go`. Deliberately NOT
+mechanized: running gate candidates (judgment + side effects — the
+skill measures, the engine only names them) and breakage-injection
+gate proof (setup step 7 keeps it; a generic engine version would
+either execute arbitrary project code from doctor or prove the wrong
+thing). Native measure DONE (2026-08-31c, implemented to
+spec/inspection.md v0.2 as authored by the parallel session working
+this repo the same day — spec text won every disagreement): inspect gained the **`measure`** family —
+per-language files/lines/non-blank/bytes with **every file landing in
+exactly one state** (analyzed / empty / binary / oversize / generated
+/ duplicate / unknown), a bounded `classified` list making
+non-analyzed files inspectable, the counting method stated inside the
+report, `formatVersion` + engine stamp, generated detection by
+derived-file name and leading-bytes marker, duplicates by content
+hash (first kept, later marked), shebang mapping for extensionless
+scripts, dot-directories pruned generically, and **capped lists that
+announce themselves in `notes`** (high-touch and classified both). No
+external tools, no execution — reading only. Known conflation to
+rule on: RESOLVED same day — the spec gained an eighth state,
+`error`, and both read-failure sites classify into it; an
+unrecognized file and an unreadable file are different facts.

@@ -261,12 +261,19 @@ func TestSeedFiles(t *testing.T) {
 	if !strings.Contains(string(lock), `"seed": true`) {
 		t.Fatal("lock must mark seed entries")
 	}
-	// the agent writes it — nothing anywhere may complain
+	// the agent writes it — nothing anywhere may complain about the
+	// seed (the unconfigured-gate finding is this repo's real state
+	// and orthogonal to seed ownership)
 	_ = os.WriteFile(prog, []byte("# Progress\n\nagent wrote this\n"), 0o644)
 	e := envelope.New("doctor")
 	g.Doctor(e)
-	if !e.OK || len(e.Diagnostics) != 0 {
-		t.Fatalf("editing a seed must produce no findings, got %+v", e.Diagnostics)
+	for _, d := range e.Diagnostics {
+		if d.Code != "GATE_STUB" {
+			t.Fatalf("editing a seed must produce no findings, got %+v", e.Diagnostics)
+		}
+	}
+	if !e.OK {
+		t.Fatalf("doctor must stay ok, got %+v", e.Diagnostics)
 	}
 	e = envelope.New("plan")
 	g.Plan(e)

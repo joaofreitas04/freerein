@@ -5,10 +5,11 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
+	"time"
 
-	"github.com/joaofreitas04/freerein/engine/internal/component"
 	"github.com/joaofreitas04/freerein/engine/internal/envelope"
 	"github.com/joaofreitas04/freerein/engine/internal/lockfile"
 	"github.com/joaofreitas04/freerein/engine/internal/registry"
@@ -56,6 +57,7 @@ func (g *Engine) Dump(e *envelope.Envelope) {
 			return
 		}
 	}
+	e.Diag(envelope.Info, "OUTPUT_OFFLOADED", "full dump written to "+outPath, "")
 	summary := []map[string]any{}
 	for _, f := range files {
 		summary = append(summary, map[string]any{"path": f.Path, "layer": f.Layer, "refs": f.Refs})
@@ -134,17 +136,28 @@ func (g *Engine) Doctor(e *envelope.Envelope) {
 			"the resolved composition differs from what is installed",
 			"run `rein plan` to review, then `rein apply --yes`")
 	}
-	// 4. stale compensations (rent doctrine, spec/component-manifest.md)
-	core, err := component.LoadAll(g.Content, "core")
-	if err == nil {
-		for _, c := range core {
-			if c.Manifest.Rent.Class == "compensation" {
-				e.Diag(envelope.Info, "COMPENSATION_RECHECK",
-					c.Manifest.Name+" is a compensation — re-check trigger: "+c.Manifest.Rent.Expires,
-					"if the current model no longer needs it, remove the component and measure")
-			}
+	// 4. stale compensations (rent doctrine, spec/component-manifest.md
+	// rule 3) — over every resolved layer, not just the core: a
+	// vendored extension's stale assumption is as expensive as an
+	// embedded one.
+	for _, c := range r.components {
+		if c.Manifest.Rent.Class == "compensation" {
+			e.Diag(envelope.Info, "COMPENSATION_RECHECK",
+				c.Manifest.Ref()+" is a compensation — re-check trigger: "+c.Manifest.Rent.Expires,
+				"if the current model no longer needs it, remove the component and measure")
 		}
 	}
+	// 5. composition shape (spec/component-manifest.md rule 7)
+	compositionAdvisories(e, r.components)
+	// 6. the gate is real — a stub that always fails is not a gate,
+	// and a repo carrying one has verification in name only.
+	if rf, ok := r.rendered["scripts/verify"]; ok && rf.Layer == "core" {
+		e.Diag(envelope.Warning, "GATE_STUB",
+			"scripts/verify is still the shipped stub — it fails until configured, so this repo has no working gate",
+			"author the project's checks in .rein/overrides/scripts/verify (rein-setup step 5 has the skeleton), then run `rein apply --yes`")
+	}
+	// 7. the debt ledger's own discipline (state-base seed schema)
+	g.debtChecks(e, r.adapter.StateDir)
 	e.Result = map[string]any{"files_checked": checks, "findings": len(e.Diagnostics)}
 }
 
@@ -157,4 +170,73 @@ func (g *Engine) Adapters(e *envelope.Envelope) {
 	}
 	sort.Strings(names)
 	e.Result = map[string]any{"adapters": names}
+}
+
+// debtChecks audits the debt ledger's rows: a debt without evidence
+// and a trigger is unactionable, and a dated trigger that has passed
+// re-activates the entry — recorded debt with no expiry is how an
+// exception quietly becomes policy.
+var debtDate = regexp.MustCompile(`\b\d{4}-\d{2}-\d{2}\b`)
+
+func (g *Engine) debtChecks(e *envelope.Envelope, stateDir string) {
+	if stateDir == "" {
+		stateDir = ".rein/state"
+	}
+	rel := filepath.ToSlash(filepath.Join(stateDir, "DEBT.md"))
+	b, err := os.ReadFile(filepath.Join(g.Repo, stateDir, "DEBT.md"))
+	if err != nil {
+		return // seed absent: plan handles restoration
+	}
+	today := time.Now().UTC().Truncate(24 * time.Hour)
+	for _, line := range strings.Split(string(b), "\n") {
+		cells := tableRow(line)
+		if cells == nil || cells[0] == "Debt" {
+			continue
+		}
+		label := cells[0]
+		if len(label) > 40 {
+			label = label[:40] + "…"
+		}
+		if cells[1] == "" || cells[2] == "" {
+			e.Diag(envelope.Warning, "DEBT_ROW_INCOMPLETE",
+				rel+": "+label+" — a debt without evidence and a paydown trigger is unactionable",
+				"add the evidence (counts, paths) and a trigger — an event or date the project cannot miss")
+			continue
+		}
+		if m := debtDate.FindString(cells[2]); m != "" {
+			if d, perr := time.Parse("2006-01-02", m); perr == nil && d.Before(today) {
+				e.Diag(envelope.Warning, "DEBT_EXPIRED",
+					rel+": "+label+" — its trigger date ("+m+") has passed, so the entry is active again",
+					"pay the debt down now, or re-rule it with a new trigger; an expired entry left in place is an exception becoming policy")
+			}
+		}
+	}
+}
+
+// tableRow parses one markdown table row into trimmed cells, returning
+// nil for non-rows and separator rows.
+func tableRow(line string) []string {
+	t := strings.TrimSpace(line)
+	if !strings.HasPrefix(t, "|") {
+		return nil
+	}
+	parts := strings.Split(t, "|")
+	if len(parts) < 4 { // leading empty + 3 cells minimum
+		return nil
+	}
+	cells := make([]string, 0, len(parts)-2)
+	for _, p := range parts[1 : len(parts)-1] {
+		cells = append(cells, strings.TrimSpace(p))
+	}
+	sep := true
+	for _, c := range cells {
+		if strings.Trim(c, "-: ") != "" {
+			sep = false
+			break
+		}
+	}
+	if sep || len(cells) < 3 {
+		return nil
+	}
+	return cells[:3]
 }

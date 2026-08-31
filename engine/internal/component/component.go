@@ -23,6 +23,7 @@ type Manifest struct {
 	Subsystem   string   `yaml:"subsystem"`
 	Rung        string   `yaml:"rung"`
 	Rent        Rent     `yaml:"rent"`
+	Addresses   []string `yaml:"addresses"` // failure surfaces this component closes (spec rule 7)
 	Provides    []string `yaml:"provides"`
 	Seeds       []string `yaml:"seeds"`
 	Requires    []string `yaml:"requires"`
@@ -37,14 +38,34 @@ type Loaded struct {
 	Files    map[string][]byte
 }
 
+// Probe is one entry of the affordance vocabulary a component may
+// `require` (spec rule 4). `rein probes` lists this table; the engine
+// implements each entry. Grown deliberately, in lockstep.
+type Probe struct {
+	Name    string `json:"name"`
+	Detects string `json:"detects"`
+}
+
+var ProbeVocabulary = []Probe{
+	{Name: "git", Detects: "a .git directory at the target repo root"},
+	{Name: "test-runner", Detects: "a test configuration or a manifest-derived test command (never executed at probe time)"},
+	{Name: "ci", Detects: "a CI configuration file"},
+	{Name: "linter", Detects: "a linter or formatter configuration file"},
+	{Name: "docs-tree", Detects: "a docs/ or doc/ directory containing markdown pages"},
+}
+
 var (
 	kinds      = set("core", "extension", "preset", "bundle")
 	subsystems = set("instructions", "tools", "environment", "state", "feedback")
 	rungs      = set("instruction", "conditional", "permission", "hook", "isolation")
 	rentKinds  = set("compensation", "amplifier")
-	// The probe vocabulary (spec rule 4). Grown deliberately, in
-	// lockstep with the engine's probes.
-	Probes = set("git")
+	Probes     = func() map[string]bool {
+		m := map[string]bool{}
+		for _, p := range ProbeVocabulary {
+			m[p.Name] = true
+		}
+		return m
+	}()
 )
 
 func set(ss ...string) map[string]bool {

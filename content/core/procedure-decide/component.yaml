@@ -1,0 +1,20 @@
+name: procedure-decide
+kind: core
+version: 0.1.0
+subsystem: state
+rung: conditional
+rent:
+  class: amplifier
+addresses:
+  - lost-rationale
+provides:
+  - skills/rein-decide/SKILL.md
+requires: []
+conflicts: []
+description: >
+  The decision recorder: capture a settled decision as an immutable,
+  numbered record with all mandatory fields collected before anything
+  is written. Use when a decision worth explaining to a future reader
+  has been made. Do NOT use for open questions still being weighed
+  (those live in the progress file's assumptions section) or for
+  harness repairs (rein-diagnose).

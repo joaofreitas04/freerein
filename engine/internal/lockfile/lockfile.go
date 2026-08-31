@@ -54,10 +54,16 @@ func Read(repo string) (*Lock, error) {
 	return &l, nil
 }
 
+// Write is atomic (temp file + rename): a process killed mid-write
+// leaves the previous lockfile intact, never a truncated one.
 func (l *Lock) Write(repo string) error {
 	b, err := json.MarshalIndent(l, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(repo, Name), append(b, '\n'), 0o644)
+	tmp := filepath.Join(repo, Name+".tmp")
+	if err := os.WriteFile(tmp, append(b, '\n'), 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tmp, filepath.Join(repo, Name))
 }

@@ -1,10 +1,12 @@
 name: verification-gate
 kind: core
-version: 0.1.0
+version: 0.2.0
 subsystem: feedback
 rung: instruction
 rent:
   class: amplifier
+addresses:
+  - unverified-claims
 provides:
   - AGENTS.md.d/20-verification.md
   - scripts/verify

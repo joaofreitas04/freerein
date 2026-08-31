@@ -19,6 +19,11 @@ and `.rein/overrides/`.
 - Run `rein doctor` and `bash scripts/verify`; note every finding.
 - Run `rein dump` and read `.rein/out/dump.json` — know what the
   harness currently says before judging what it failed to say.
+- Read `.rein/journal.jsonl` and the progress file for this failure's
+  history. A single occurrence can be accidental — say so and stop at
+  a note unless the human insists. A recurrence after an earlier fix
+  means the earlier attribution was wrong; diagnose the attribution,
+  do not stack a second artifact on the first.
 
 ## 2. Attribute to a subsystem
 
@@ -48,6 +53,10 @@ Prefer, in order (cheapest binding that actually holds):
 
 Never solve a reliability problem by dumping more prose into the
 instruction file — every added rule costs compliance on the others.
+And never ship a second artifact for a failure surface an installed
+component already addresses (`rein plan` warns `ADDRESSES_OVERLAP`):
+strengthen or replace the existing one — stacked fixes for one
+failure add cost faster than effect.
 
 ## 4. Apply and predict
 
@@ -61,4 +70,6 @@ instruction file — every added rule costs compliance on the others.
 
 - `rein doctor` clean, verify green.
 - Record in `.rein/state/PROGRESS.md`: the failure, the attribution,
-  the artifact shipped, and the prediction.
+  the artifact shipped, and the prediction — and every attribution
+  you considered and rejected, with why. The rejected candidates are
+  what stop the next diagnosis from re-walking this one.

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "resolved_at": "2026-08-28T19:27:19Z",
+  "resolved_at": "2026-08-31T10:22:43Z",
   "engine": "rein 0.1.0-dev",
   "adapter": {
     "name": "claude-code",
@@ -17,54 +17,63 @@
     }
   ],
   "files": {
-    ".claude/skills/rein-diagnose/SKILL.md": {
+    ".claude/skills/rein-decide/SKILL.md": {
       "layer": "core",
-      "component": "procedure-diagnose@0.1.0",
-      "hash": "sha256:d9141daa16320a69eeec5ace8607ad89917029aaae40c3d63f9c1108175b2e96",
+      "component": "procedure-decide@0.1.0",
+      "hash": "sha256:9c422f96d5432df4c325c84cd584e7a3c640c439657df9e912a1ec84f5448bf1",
       "shadowed": null,
       "refs": [
-        "procedure-diagnose@0.1.0"
+        "procedure-decide@0.1.0"
+      ]
+    },
+    ".claude/skills/rein-diagnose/SKILL.md": {
+      "layer": "core",
+      "component": "procedure-diagnose@0.2.0",
+      "hash": "sha256:a9af6a030e0f96c2177139af7facc870918a397ea4fb46e32610836626876b76",
+      "shadowed": null,
+      "refs": [
+        "procedure-diagnose@0.2.0"
       ]
     },
     ".claude/skills/rein-setup/SKILL.md": {
       "layer": "core",
-      "component": "procedure-setup@0.3.0",
-      "hash": "sha256:a6305e704469f2ae21f9bab9cb1117b97f108ecf80499f846c1ed7c93809aaa4",
+      "component": "procedure-setup@0.6.0",
+      "hash": "sha256:5074822321cf576b98698a0f382b119f4c928bf50e56201817151ff1e642d775",
       "shadowed": null,
       "refs": [
-        "procedure-setup@0.3.0"
+        "procedure-setup@0.6.0"
       ]
     },
     ".rein/state/DEBT.md": {
       "layer": "core",
-      "component": "state-base@0.2.0",
-      "hash": "sha256:4a72564eb8e5b2932aae3c1337ef20c01b72a957f40f75947c081cb5fd5b6c58",
+      "component": "state-base@0.3.0",
+      "hash": "sha256:ab19c95f4f83eda5805177a77dc9ee9ccabecd6091f8d47885ba5535741f4fd3",
       "seed": true,
       "shadowed": null,
       "refs": [
-        "state-base@0.2.0"
+        "state-base@0.3.0"
       ]
     },
     ".rein/state/PROGRESS.md": {
       "layer": "core",
-      "component": "state-base@0.2.0",
-      "hash": "sha256:f0874452ef35f8c05212e9ab5b26c0ebf5c2b8f39611119f5dc73d91a4bd06b7",
+      "component": "state-base@0.3.0",
+      "hash": "sha256:d830d77e80d8bb4a88d1b7b18cf13947075b547d1e5e066d4528eed9a99fbc0a",
       "seed": true,
       "shadowed": null,
       "refs": [
-        "state-base@0.2.0"
+        "state-base@0.3.0"
       ]
     },
     "CLAUDE.md": {
       "layer": "render",
-      "component": "instructions-base@0.1.0, local-overrides@local, verification-gate@0.1.0, state-base@0.2.0",
-      "hash": "sha256:d32f9f8adc1214a95dd4bab97cbad9bce9b1279bda67f4a77966a97f1c43f2ff",
+      "component": "instructions-base@0.2.0, local-overrides@local, verification-gate@0.2.0, state-base@0.3.0",
+      "hash": "sha256:dd7ccfebfb3d4a0713ade5686d04ccca2abf1929fbcb7b8e62ca53a3fbaf5dab",
       "shadowed": null,
       "refs": [
-        "instructions-base@0.1.0",
+        "instructions-base@0.2.0",
         "local-overrides@local",
-        "verification-gate@0.1.0",
-        "state-base@0.2.0"
+        "verification-gate@0.2.0",
+        "state-base@0.3.0"
       ]
     },
     "scripts/verify": {
@@ -72,7 +81,7 @@
       "component": "local-overrides@local",
       "hash": "sha256:ea325e1f777e89edd20a45c3545426bd25f6fe14a1cc741b014c40d27d9f0153",
       "shadowed": [
-        "verification-gate@0.1.0"
+        "verification-gate@0.2.0"
       ],
       "refs": [
         "local-overrides@local"

@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/joaofreitas04/freerein/content"
 	"github.com/joaofreitas04/freerein/engine/internal/engine"
@@ -18,6 +19,8 @@ usage: rein <command> [flags]
 
 commands:
   init      declare a harness in this repo (writes harness.yaml)
+  inspect   survey the repo — toolchain, tests, ci, instruction corpus
+            (detection only; never executes project code)
   plan      show what apply would change (adds/changes/drift/removes)
   apply     render and install the resolved harness (--yes to confirm)
   dump      print the resolved composition (detail to .rein/out/dump.json)
@@ -27,6 +30,8 @@ commands:
   info      show a component's manifest before installing anything
   upgrade   check registry components for newer versions (--yes to vendor)
   adapters  list embedded host adapters
+  probes    list the affordance vocabulary requires: entries may use
+  note      append a note entry to the harness journal
   version   engine version
 
 flags:
@@ -98,6 +103,12 @@ func main() {
 		g.Upgrade(e, *yes, *registrySrc)
 	case "adapters":
 		g.Adapters(e)
+	case "probes":
+		g.Probes(e)
+	case "inspect":
+		g.Inspect(e)
+	case "note":
+		g.Note(e, strings.Join(positionals, " "))
 	case "version":
 		e.Result = map[string]string{"version": engine.Version}
 	default:

@@ -91,11 +91,12 @@ func (g *Engine) Init(e *envelope.Envelope, adapterName string) {
 // ---------- resolution pipeline ----------
 
 type resolution struct {
-	cfg      *Config
-	adapter  *adapter.Adapter
-	set      *resolve.Set
-	rendered map[string]*resolve.Rendered
-	layers   []lockfile.LayerRef
+	cfg        *Config
+	adapter    *adapter.Adapter
+	set        *resolve.Set
+	rendered   map[string]*resolve.Rendered
+	layers     []lockfile.LayerRef
+	components []*component.Loaded // every loaded component, layer order
 }
 
 func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
@@ -154,9 +155,11 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 	// probes (spec/component-manifest.md rule 4) and declared conflicts,
 	// across every loaded component
 	all := map[string]*component.Loaded{}
+	var comps []*component.Loaded
 	for _, l := range layers {
 		for _, c := range l.Components {
 			all[c.Manifest.Name] = c
+			comps = append(comps, c)
 			for _, req := range c.Manifest.Requires {
 				if ok, detail := g.probe(req); !ok {
 					e.Fail("REQUIREMENT_UNMET",
@@ -199,7 +202,31 @@ func (g *Engine) resolveAll(e *envelope.Envelope) *resolution {
 	for _, l := range layers {
 		lrefs = append(lrefs, sources[l.ID])
 	}
-	return &resolution{cfg: cfg, adapter: ad, set: set, rendered: rendered, layers: lrefs}
+	return &resolution{cfg: cfg, adapter: ad, set: set, rendered: rendered, layers: lrefs, components: comps}
+}
+
+// compositionAdvisories prices the composition's shape (spec rule 7):
+// two loaded components sharing an `addresses` entry is a warning —
+// stacked fixes for one failure compound cost faster than effect.
+func compositionAdvisories(e *envelope.Envelope, comps []*component.Loaded) {
+	byAddr := map[string][]string{}
+	for _, c := range comps {
+		for _, a := range c.Manifest.Addresses {
+			byAddr[a] = append(byAddr[a], c.Manifest.Name)
+		}
+	}
+	var overlapping []string
+	for a, names := range byAddr {
+		if len(names) > 1 {
+			overlapping = append(overlapping, a)
+		}
+	}
+	sort.Strings(overlapping)
+	for _, a := range overlapping {
+		e.Diag(envelope.Warning, "ADDRESSES_OVERLAP",
+			fmt.Sprintf("%q is addressed by %s — stacked fixes for one failure usually add cost faster than effect", a, strings.Join(byAddr[a], " and ")),
+			"strengthen one of them instead of keeping both; `rein remove` the weaker, or narrow its addresses")
+	}
 }
 
 // loadOverrides builds the pseudo-component for .rein/overrides/**.
@@ -238,6 +265,9 @@ func (g *Engine) loadOverrides(e *envelope.Envelope) *component.Loaded {
 	return lc
 }
 
+// probe answers one affordance question (spec/component-manifest.md
+// rule 4). Detection is shared with `rein inspect` (spec/inspection.md
+// rule 2), so requires-gating and the report cannot disagree.
 func (g *Engine) probe(name string) (bool, string) {
 	switch name {
 	case "git":
@@ -245,6 +275,27 @@ func (g *Engine) probe(name string) (bool, string) {
 			return true, ""
 		}
 		return false, "no .git directory — the target is not a git repository"
+	case "test-runner":
+		configs, candidates := g.detectTests()
+		if len(configs) > 0 || len(candidates) > 0 {
+			return true, ""
+		}
+		return false, "no test configuration or manifest-derived test command found"
+	case "ci":
+		if len(g.detectCI()) > 0 {
+			return true, ""
+		}
+		return false, "no CI configuration found"
+	case "linter":
+		if len(g.detectFiles(lintFormatConfigs)) > 0 {
+			return true, ""
+		}
+		return false, "no linter or formatter configuration found"
+	case "docs-tree":
+		if g.detectDocsTree() != "" {
+			return true, ""
+		}
+		return false, "no docs/ tree with markdown pages"
 	}
 	return false, "unknown probe"
 }
@@ -263,6 +314,17 @@ type Plan struct {
 	Drift     []PlanItem `json:"drift"`
 	Removes   []PlanItem `json:"removes"`
 	Unmanaged []PlanItem `json:"unmanaged"`
+	Budget    *Budget    `json:"budget,omitempty"`
+}
+
+// Budget prices the rendered instruction file against the adapter's
+// limit (spec/resolution.md rule 6): the agent pays this on every
+// turn, so growth must be a decision, never an accident.
+type Budget struct {
+	InstructionFile string `json:"instruction_file"`
+	Bytes           int    `json:"bytes"`
+	MaxBytes        int    `json:"max_bytes"`
+	Fragments       int    `json:"fragments"`
 }
 
 func (p *Plan) empty() bool {
@@ -327,7 +389,11 @@ func (g *Engine) computePlan(r *resolution) (*Plan, error) {
 		sort.Strings(lockPaths)
 		for _, path := range lockPaths {
 			if _, ok := r.rendered[path]; !ok {
-				p.Removes = append(p.Removes, PlanItem{Path: path, Component: lock.Files[path].Component})
+				detail := ""
+				if lock.Files[path].Seed {
+					detail = "seed — agent-owned; apply drops the lock entry and leaves the file in place"
+				}
+				p.Removes = append(p.Removes, PlanItem{Path: path, Component: lock.Files[path].Component, Detail: detail})
 			}
 		}
 	}
@@ -352,10 +418,32 @@ func (g *Engine) Plan(e *envelope.Envelope) {
 		e.Fail("LOCKFILE_INVALID", err.Error(), "inspect or delete "+lockfile.Name+" and re-run")
 		return
 	}
+	// spec/resolution.md rule 6: plan prices the composition.
+	if rf, ok := r.rendered[r.adapter.InstructionFile.Path]; ok {
+		p.Budget = &Budget{
+			InstructionFile: r.adapter.InstructionFile.Path,
+			Bytes:           len(rf.Content),
+			MaxBytes:        r.adapter.InstructionFile.MaxBytes,
+			Fragments:       len(rf.Refs),
+		}
+		if p.Budget.MaxBytes > 0 && p.Budget.Bytes*5 >= p.Budget.MaxBytes*4 {
+			e.Diag(envelope.Warning, "NEAR_CONTEXT_BUDGET",
+				fmt.Sprintf("%s renders to %d bytes — over 80%% of the adapter's %d-byte limit",
+					p.Budget.InstructionFile, p.Budget.Bytes, p.Budget.MaxBytes),
+				"instruction content is paid on every turn: drop fragments an agent could derive from the tree, and move rules that only apply sometimes behind a condition (a skill, a hook) instead of stating them always")
+		}
+	}
+	compositionAdvisories(e, r.components)
 	e.Result = p
 	if p.empty() {
 		e.Diag(envelope.Info, "UP_TO_DATE", "installed harness matches the resolved composition", "")
 	}
+}
+
+// Probes lists the affordance vocabulary `requires` entries may use
+// (spec/component-manifest.md rule 4).
+func (g *Engine) Probes(e *envelope.Envelope) {
+	e.Result = map[string]any{"probes": component.ProbeVocabulary}
 }
 
 // ---------- apply ----------
@@ -385,6 +473,7 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 	}
 	prevLock, _ := lockfile.Read(g.Repo)
 	applied := []string{}
+	conflicts := []string{}
 	for _, item := range p.Unmanaged {
 		e.Diag(envelope.Warning, "EXISTS_UNMANAGED",
 			item.Path+" already exists and is not managed by rein; apply left it alone",
@@ -444,6 +533,7 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 				full := filepath.Join(g.Repo, artifact)
 				_ = os.MkdirAll(filepath.Dir(full), 0o755)
 				_ = os.WriteFile(full, out, 0o644)
+				conflicts = append(conflicts, path)
 				e.Diag(envelope.Warning, "MERGE_CONFLICT",
 					path+": local edit and upstream change overlap; the file was left alone",
 					"resolve the conflict markers in "+artifact+", copy the result over "+path+", then re-run `rein apply --yes`")
@@ -477,6 +567,18 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 		applied = append(applied, path)
 	}
 	for _, item := range p.Removes {
+		// Seed disposal (spec/component-manifest.md): a seeded file is
+		// the agent's after install — un-installing its component must
+		// never delete state an agent wrote. Drop the lock entry,
+		// leave the file, and say so.
+		if prevLock != nil {
+			if prev, ok := prevLock.Files[item.Path]; ok && prev.Seed {
+				e.Diag(envelope.Info, "SEED_LEFT",
+					item.Path+" was seeded and is agent-owned; the file stays, only its lock entry was dropped",
+					"delete the file by hand if the state it holds is no longer wanted")
+				continue
+			}
+		}
 		// refcount rule: every ref must be gone from the resolution.
 		_ = os.Remove(filepath.Join(g.Repo, item.Path))
 		_ = os.Remove(g.basePath(item.Path))
@@ -524,6 +626,13 @@ func (g *Engine) Apply(e *envelope.Envelope, yes bool) {
 	}
 	sort.Strings(applied)
 	e.Result = map[string]any{"applied": applied, "lockfile": lockfile.Name}
+	// spec/journal.md rule 1: every completed state change is history —
+	// including the conflicts this apply left behind (rule 2).
+	var layerIDs []string
+	for _, l := range r.layers {
+		layerIDs = append(layerIDs, l.ID)
+	}
+	g.journal(e, "apply", map[string]any{"applied": applied, "conflicts": conflicts, "layers": layerIDs})
 }
 
 func findItem(p *Plan, path string) *PlanItem {

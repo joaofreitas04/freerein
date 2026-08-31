@@ -16,6 +16,8 @@ on any failure — it names your next action.
 
 ## 1. Ground yourself
 
+- Run `rein inspect` — discovery works before init, and it writes the
+  fact report the rest of this procedure reads.
 - Run `rein plan`. If `NOT_INITIALIZED`, run `rein init` (pick the
   adapter matching this host), then `rein plan` again.
 - Run `rein dump` and read `.rein/out/dump.json` — know what you are
@@ -23,28 +25,39 @@ on any failure — it names your next action.
 
 ## 2. Discover before asking
 
-Inspect the tree yourself — never ask the human something it answers:
+Read `.rein/out/inspect.json`. The facts arrive detected — toolchain,
+the size-and-language measure (every file counted or classified with
+its reason: generated, duplicate, binary, oversize, unknown), test
+candidates with provenance, CI configs, the instruction corpus,
+shared config surfaces, high-touch files, docs tree, affordances —
+and your job is what they mean. Never ask the human something the
+report answers, and never re-derive by hand what it already holds.
+On top of the report:
 
-- Stack and toolchain (manifests, lockfiles, CI config, Makefiles,
-  package scripts).
-- **The gate proposal.** Collect every candidate check (build,
-  typecheck, tests, lint, format) from CI config and scripts, then
-  **run each one** and record outcome and wall-clock time. Produce a
-  proposal table: check | command | evidence (where you found it) |
-  runtime | recommendation (gate / slow-tier / ledger). A check that
-  fails on the untouched tree is debt, not a gate candidate. You
-  derive this table; the human only rules on it.
-- **Existing instruction files**: CLAUDE.md, AGENTS.md, .cursorrules,
-  and anything similar. These get triaged in step 3, never ignored
-  and never adopted wholesale.
-- **Other config writers**: search for scripts or tools that WRITE
-  agent config (installers appending to CLAUDE.md, MCP config
-  generators, other harness tools). Each one found is an ownership
-  conflict the human must rule on in step 4 — two writers on one
+- **The gate proposal.** The report lists candidate checks and where
+  each came from. **Run each candidate yourself** — the engine never
+  executes project code; measuring is your job — and record outcome
+  and wall-clock time. Produce a proposal table: check | command |
+  evidence | runtime | recommendation (gate / slow-tier / ledger).
+  A check that fails on the untouched tree is debt, not a gate
+  candidate. You derive this table; the human only rules on it.
+- **The instruction corpus** the report lists gets triaged in step 3
+  — never ignored, never adopted wholesale.
+- **Ownership conflicts**: the report's config surfaces are files
+  more than one tool commonly writes. Find who writes each (other
+  harness tools, MCP installers, scripts appending to CLAUDE.md);
+  every writer found is a ruling for step 4 — two writers on one
   file silently destroy each other's work.
-- **Debt**: broken or never-run tests, pre-existing lint errors,
-  version mismatches, gates CI doesn't enforce. Collect with
-  evidence (counts, paths); it feeds the ledger, not the gate.
+- **Debt**: every candidate that failed on the untouched tree, plus
+  never-run tests, pre-existing lint errors, version mismatches,
+  gates CI doesn't enforce. Collect with evidence (counts, paths);
+  it feeds the ledger, not the gate.
+- **Affordances**: if the report shows no test runner, no CI, or no
+  docs tree, say so plainly in step 4 — which sensors are even
+  buildable here is a fact the human sees before anything installs.
+  The measure sharpens the same conversation: a large generated or
+  duplicate share is entropy worth a debt-ledger row, not something
+  to silently lint around.
 
 ## 3. Triage the existing instruction corpus
 
@@ -62,8 +75,11 @@ you kept derivable material — re-triage.
 
 ## 4. Interview the human
 
-One round. **Every item is a ruling on a proposal you present with
-evidence and a recommended default — never an open question.** If you
+One topic at a time, each approved separately — triage, then the
+gate, then ownership, then forbidden surfaces. A single batched
+approval converts review into a formality; four small rulings are
+four real ones. **Every item is a ruling on a proposal you present
+with evidence and a recommended default — never an open question.** If you
 are about to ask something open-ended, you skipped discovery; go back
 and derive the proposal first. What stays with the human is policy —
 what blocks "done", what risk is acceptable — not facts.
@@ -84,12 +100,56 @@ what blocks "done", what risk is acceptable — not facts.
 ## 5. Configure
 
 - `.rein/overrides/scripts/verify` — the agreed commands plus every
-  Demote rule as a real check; POSIX sh, `set -eu`, fails loudly.
+  Demote rule as a real check; POSIX sh, `set -eu`. **Output is a
+  budget the agent pays**: a passing check prints one line at most; a
+  failing check prints `ERROR` and the reason on one greppable line,
+  and the error text teaches the fix — a check that only says no is
+  half an instrument. Thousands of lines of passing output cost the
+  agent the very context it needs to act on a failure. Start from
+  this shape:
+
+  ```sh
+  #!/bin/sh
+  # The definition of done for this repository.
+  set -eu
+  cd "$(dirname "$0")/.."
+
+  echo "verify: <name>"
+  <command> >/dev/null || { echo "ERROR <name>: <what failed, and the fix>" >&2; exit 1; }
+
+  echo "verify: green"
+  ```
 - `.rein/overrides/AGENTS.md.d/10-project.md` — the Keep residue
-  only.
+  only. `rein plan` prices the rendered file; if it warns
+  `NEAR_CONTEXT_BUDGET`, you kept derivable material — re-triage.
+  Shape it as a runbook, not a README:
+
+  ```markdown
+  ## Boundaries
+  | ✅ always | ⚠️ ask first | 🚫 never |
+  |---|---|---|
+  | <safe action> | <discretionary action> | <forbidden surface> |
+
+  ## Commands
+  <exact command> — <its done-condition>
+
+  ## High-touch files
+  <path> — <why it attracts unrelated changes> (from inspect's churn map)
+
+  ## Change budget
+  Keep one change under <N> lines; past that, land the smallest coherent stage first.
+  ```
+
+  Skip any section with nothing real in it — an empty scaffold reads
+  as a decision nobody made. The ⚠️ middle tier is the load-bearing
+  column: a two-valued rule forces every discretionary case into a
+  silent yes or a blocking no.
 - `.rein/state/DEBT.md` — one row per debt found in discovery:
   the debt, the evidence, the paydown trigger. Debt is ledgered,
-  not gated: a gate red from birth trains agents to ignore it.
+  not gated: a gate red from birth trains agents to ignore it. Give
+  each trigger an event or a date the project cannot miss — `rein
+  doctor` re-raises any entry whose date has passed, so an exception
+  cannot quietly become policy.
 
 ## 6. Apply with the human steering
 
@@ -108,6 +168,10 @@ what blocks "done", what risk is acceptable — not facts.
 ## 8. Hand off
 
 - `rein doctor`; resolve or report every finding.
+- Record the rulings: `rein note "setup: <drop/demote/keep counts>;
+  <rejected gate candidates, with why>; <ownership rulings>"`. The
+  journal entry is what stops a future diagnosis from re-litigating
+  today's decisions — rejected candidates especially.
 - Summarize: what is installed, what verify runs, what was dropped
   or demoted in triage and why, what the debt ledger holds, which
   ownership rulings were made, and that future edits to managed

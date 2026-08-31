@@ -1,4 +1,4 @@
-# Resolution — contract v0.1 (draft)
+# Resolution — contract v0.2 (draft)
 
 How `harness.yaml` (intent) becomes a resolved file set.
 
@@ -39,3 +39,12 @@ the list it is declared under.
    differs), drift (lock and tree hashes differ — respected, merged,
    never clobbered), removals (in lock, no longer in resolution —
    refcount-gated).
+6. **`plan` prices the composition.** Instruction content is paid for
+   out of a budget the host enforces and the agent pays on every
+   turn, so the plan reports it before apply spends it: the plan
+   result carries a `budget` object — rendered instruction-file
+   bytes, the adapter's `max_bytes`, and the fragment count — and a
+   `NEAR_CONTEXT_BUDGET` warning fires at 80% of the adapter limit,
+   while the render itself refuses past 100%. What a fragment costs
+   is not its length but its necessity; the number exists so that
+   growth is a decision someone made, never an accident nobody saw.

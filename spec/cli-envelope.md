@@ -1,4 +1,4 @@
-# CLI envelope — contract v0.1 (draft)
+# CLI envelope — contract v0.2 (draft)
 
 The primary caller of `rein` is a coding agent. Every invocation —
 success or failure — emits exactly one JSON document on stdout.
@@ -26,7 +26,11 @@ the contract.
 
 1. **Failures stay well-formed.** A crash without an envelope is a bug
    with the same severity as data corruption. `ok: false` + a
-   diagnostic, always; exit code mirrors `ok`.
+   diagnostic, always. A command that could not complete leaves
+   `result` null — never a partial shape an agent might mistake for
+   output. A command that completed but *found* problems (`doctor`)
+   keeps its result: `ok` reflects the findings, `result` reflects
+   completion, and the two are independent by design.
 2. **Every diagnostic carries a `fix`** — the next command or edit
    that resolves it, phrased to be executed by the model reading it.
    An error message that only names the problem is a contract
@@ -37,7 +41,37 @@ the contract.
    `remove` without `--yes` return `confirm_required` describing the
    pending change-set; the judgment procedure shows it to the human
    and re-invokes with `--yes`. The engine never prompts
-   interactively — prompting is the host agent's job.
+   interactively — prompting is the host agent's job. Headless
+   callers therefore never hang: a pending confirmation is a
+   well-formed success (`ok: true`, exit 0) whose `confirm_required`
+   is non-null, and nothing was applied. An agent must treat a
+   non-null `confirm_required` as "not done", never as a result.
 5. **Output is bounded.** Large results (full dumps, diffs) are
    written to files under `.rein/out/` and referenced by path in the
-   envelope, so the agent chooses what enters its context.
+   envelope, so the agent chooses what enters its context. **A cut
+   announces itself in the channel the caller already reads**: any
+   command that offloads or truncates emits an `info` diagnostic
+   (`OUTPUT_OFFLOADED`) naming the path and, when applicable, the
+   limit that forced the cut. Silent truncation anywhere in the
+   envelope is a contract violation.
+6. **Exit codes are contractual.** `0` = `ok: true`, including
+   envelopes that carry warnings or a pending `confirm_required`;
+   `1` = `ok: false`; `2` = the invocation itself failed before a
+   command was identified (unknown flags, no arguments) — usage goes
+   to stderr and no envelope is emitted, the one legitimate
+   envelope-free exit. Agents may branch on the exit code before
+   parsing anything.
+7. **Absent, not null.** Optional keys are omitted when they carry
+   nothing. The two exceptions are structural and fixed: `result` is
+   explicitly null on failure (rule 1) and `confirm_required` is
+   explicitly null when no confirmation is pending (rule 4), so the
+   two fields an agent must branch on are always present.
+
+## Known inconsistencies
+
+A contract with no defect register is either new or unexamined.
+Discrepancies between this document and the engine are work items,
+recorded here until fixed — never silently absorbed.
+
+1. (none currently recorded — last checked against `engine/` at
+   contract v0.2)

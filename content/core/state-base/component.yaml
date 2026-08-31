@@ -1,10 +1,12 @@
 name: state-base
 kind: core
-version: 0.2.0
+version: 0.3.0
 subsystem: state
 rung: instruction
 rent:
   class: amplifier
+addresses:
+  - cold-start
 provides:
   - AGENTS.md.d/30-state.md
   - .rein/state/PROGRESS.md

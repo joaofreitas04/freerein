@@ -78,9 +78,10 @@ func TestWalkingSkeleton(t *testing.T) {
 	if e := run("apply", func(e *envelope.Envelope) { g.Apply(e, true) }); !has(e, "UP_TO_DATE") {
 		t.Fatalf("second apply: want UP_TO_DATE, got %v", codes(e))
 	}
-	// doctor clean
-	if e := run("doctor", g.Doctor); !e.OK || len(e.Diagnostics) != 0 {
-		t.Fatalf("doctor on clean install: want no findings, got %v", codes(e))
+	// doctor on a clean install has exactly one truthful finding: the
+	// gate is still the shipped stub, so the repo has no working gate.
+	if e := run("doctor", g.Doctor); !e.OK || !has(e, "GATE_STUB") || len(e.Diagnostics) != 1 {
+		t.Fatalf("doctor on clean install: want only GATE_STUB, got %v", codes(e))
 	}
 	// drift: local edit is detected and never clobbered
 	cm := filepath.Join(repo, "CLAUDE.md")
@@ -116,5 +117,9 @@ func TestWalkingSkeleton(t *testing.T) {
 	installed, _ := os.ReadFile(filepath.Join(repo, "scripts/verify"))
 	if !strings.Contains(string(installed), "echo ok") {
 		t.Fatal("override did not win over core")
+	}
+	// a configured gate clears the stub finding
+	if e := run("doctor", g.Doctor); has(e, "GATE_STUB") {
+		t.Fatalf("an overridden gate must clear GATE_STUB, got %v", codes(e))
 	}
 }

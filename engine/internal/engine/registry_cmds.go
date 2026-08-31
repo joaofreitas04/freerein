@@ -152,6 +152,7 @@ write:
 	}
 	e.Diag(envelope.Info, "ADDED", ref+" vendored and declared; nothing installed yet",
 		"run `rein plan` to review, then `rein apply --yes`")
+	g.journal(e, "add", map[string]any{"component": ref, "kind": c.Manifest.Kind})
 }
 
 func (g *Engine) Remove(e *envelope.Envelope, name string) {
@@ -188,6 +189,7 @@ func (g *Engine) Remove(e *envelope.Envelope, name string) {
 	e.Result = map[string]any{"removed": removed}
 	e.Diag(envelope.Info, "REMOVED", removed+" undeclared; its installed files are still in the tree",
 		"run `rein plan` to review the removals, then `rein apply --yes`")
+	g.journal(e, "remove", map[string]any{"component": removed})
 }
 
 func stillReferenced(cfg *Config, ref string) bool {
@@ -352,4 +354,5 @@ func (g *Engine) Upgrade(e *envelope.Envelope, yes bool, registryOverride string
 	e.Result = map[string]any{"upgraded": applied}
 	e.Diag(envelope.Info, "VENDORED", "new versions vendored and declared; nothing installed yet",
 		"run `rein plan` to review (locally edited files will three-way merge), then `rein apply --yes`")
+	g.journal(e, "upgrade", map[string]any{"upgraded": applied})
 }
