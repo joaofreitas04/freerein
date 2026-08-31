@@ -80,7 +80,13 @@ journal v0.5: six mandatory fields with the measurement named before
 the change, one open proposal at a time as a hard refusal, verdicts
 immutable and evidence-only with the pre-named measurement copied
 in — proposer-never-accepts stays procedure discipline, stated, not
-faked) · `version`.
+faked) · `report` (field-report producer side: component id+version
+from the lock, shadows with journal since-dates, component-prefixed
+citation counters, judgment-kind journal evidence capped and
+announced; judgment fields as mandatory flags; written to
+.rein/out/report/, never transmitted — `off` is the only submission
+level) · `version`. The command resolves from anywhere in the arg
+vector — flag-first invocations dispatch.
 
 **Doctor's standing checks**: `DRIFT` / `COMPOSITION_BEHIND` /
 `VENDOR_TAMPERED` / `COMPENSATION_RECHECK` (every resolved layer) /
@@ -97,11 +103,15 @@ agent-owned, never drift-tracked; removal leaves them and says so
 
 **Contracts** (`spec/`): cli-envelope v0.3 · citation v0.1
 (ids, markers, store, misreadings) · component-manifest v0.2
-(`addresses:`) · host-adapter v0.1 · inspection v0.2 · journal v0.5
+(`addresses:`) · field-report v0.2 (accepted 2026-08-31: component-
+scoped facts only, case-before-fix intake, publish as the signing
+boundary, submission under no-unattended-egress) · host-adapter
+v0.1 · inspection v0.2 · journal v0.5
 (append-only; `note`/`attest`/`proposal`/`verdict` kinds; read path
 with surfaces) ·
 lockfile v0.1 · registry v0.2 · resolution v0.5 (citation markers
-in the render; whole-composition cost tiers; profiles).
+in the render; whole-composition cost tiers; profiles) · eval v0.1
+(draft, awaiting ruling).
 
 **Profiles** (`profile:` in harness.yaml, resolution v0.5):
 `standard` (full core) · `minimal` (instructions-minimal +
@@ -121,9 +131,11 @@ against the tree before apply; verify skeleton: environment first,
 cheap-first with evidence comments, ratchet-with-baseline for
 grandfathered rules; the adoption move at step 6; step-7 attest only
 after watching every breakage fail, injection-scope check taught) ·
-procedure-diagnose 0.4 (journal recurrence before any
+procedure-diagnose 0.5 (journal recurrence before any
 artifact; never stack on an addressed surface; rulings via `rein
-note`; re-prove a touched gate) · procedure-decide 0.1 (immutable
+note`; re-prove a touched gate; local-vs-shipped disposition read
+from the lock at attribution, shipped-component closes with `rein
+report` — never a silent fork) · procedure-decide 0.1 (immutable
 decision records, refuse-before-generate) · procedure-evolve 0.1
 (one candidate from the observe evidence, propose before touching,
 measure by the pre-named check, verdict on evidence; rejected

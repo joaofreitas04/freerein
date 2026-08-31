@@ -41,6 +41,16 @@ name the layer that let it:
 | cold starts, lost progress, repeated work across sessions | state |
 | claimed done without proof, gate green on broken work | feedback |
 
+Then read the **disposition** from the lock — mechanical, not a
+judgment: find the failing artifact's entry in `harness.lock`. Layer
+`overrides` or `local` means local configuration — your override is
+the whole fix. Layer `core` (or a standing `shadowed:` entry
+displacing shipped content) means a **shipped component** is
+defective: the override you ship in step 3 fixes this repo and
+conceals the defect from every other install, so step 5 also carries
+the class defect home as a field report — never a silent fork
+(spec/field-report.md).
+
 ## 3. Choose the smallest artifact
 
 Prefer, in order (cheapest binding that actually holds):
@@ -84,5 +94,13 @@ failure add cost faster than effect.
   re-walking this one — and step 1's recurrence check reads the
   journal, so a ruling recorded only in the progress file is
   invisible to it.
+- If step 2's disposition was shipped-component, produce the report:
+  `rein report <component> --subsystem <bucket> --failure-class
+  "<generalized defect>" --reproduction "<inputs as affordances,
+  expected vs observed>" --disposition fix|default-change|table-entry|docs`,
+  then show the human the file under `.rein/out/report/`.
+  Component-scoped facts only — a report that cannot be written
+  without repo context is not written. Submission is the human's
+  move under `report.submit`; yours is the honest artifact.
 - Summarize in `.rein/state/PROGRESS.md` (current state only): the
   artifact now installed and the prediction now standing.
