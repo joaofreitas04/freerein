@@ -369,7 +369,8 @@ func (g *Engine) Inspect(e *envelope.Envelope) {
 		e.Fail("WRITE_FAILED", err.Error(), "check permissions on "+OutDir)
 		return
 	}
-	e.Diag(envelope.Info, "OUTPUT_OFFLOADED", "full report written to "+outPath, "")
+	e.Diag(envelope.Info, "OUTPUT_OFFLOADED", "full report written to "+outPath,
+		"read "+outPath+" for the full report omitted from this envelope")
 	top := ""
 	if len(r.Measure.Languages) > 0 {
 		top = r.Measure.Languages[0].Language

@@ -251,7 +251,8 @@ func (g *Engine) Info(e *envelope.Envelope, target, registryOverride string) {
 			}
 			tmp, err := os.MkdirTemp("", "rein-info-")
 			if err != nil {
-				e.Fail("WRITE_FAILED", err.Error(), "")
+				e.Fail("WRITE_FAILED", err.Error(),
+					"check free space and permissions on the system temp dir ($TMPDIR)")
 				return
 			}
 			defer os.RemoveAll(tmp)

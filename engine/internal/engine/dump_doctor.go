@@ -57,7 +57,8 @@ func (g *Engine) Dump(e *envelope.Envelope) {
 			return
 		}
 	}
-	e.Diag(envelope.Info, "OUTPUT_OFFLOADED", "full dump written to "+outPath, "")
+	e.Diag(envelope.Info, "OUTPUT_OFFLOADED", "full dump written to "+outPath,
+		"read "+outPath+" for the per-file detail omitted from this envelope")
 	summary := []map[string]any{}
 	for _, f := range files {
 		summary = append(summary, map[string]any{"path": f.Path, "layer": f.Layer, "refs": f.Refs})

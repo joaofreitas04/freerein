@@ -21,7 +21,7 @@ type Diagnostic struct {
 	Severity Severity `json:"severity"`
 	Code     string   `json:"code"`
 	Message  string   `json:"message"`
-	Fix      string   `json:"fix"`
+	Fix      string   `json:"fix,omitempty"`
 }
 
 type Envelope struct {

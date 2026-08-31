@@ -1,4 +1,4 @@
-# CLI envelope — contract v0.2 (draft)
+# CLI envelope — contract v0.3 (draft)
 
 The primary caller of `rein` is a coding agent. Every invocation —
 success or failure — emits exactly one JSON document on stdout.
@@ -31,10 +31,16 @@ the contract.
    output. A command that completed but *found* problems (`doctor`)
    keeps its result: `ok` reflects the findings, `result` reflects
    completion, and the two are independent by design.
-2. **Every diagnostic carries a `fix`** — the next command or edit
-   that resolves it, phrased to be executed by the model reading it.
-   An error message that only names the problem is a contract
-   violation.
+2. **Every error and warning carries a `fix`** — the next command or
+   edit that resolves it, phrased to be executed by the model reading
+   it. An error message that only names the problem is a contract
+   violation, and the rule is enforced mechanically (a source-level
+   check fails the build on an empty fix). An **info** diagnostic
+   carries a `fix` when a next step genuinely exists
+   (`OUTPUT_OFFLOADED` names the file to read) and omits the key
+   otherwise (rule 7): forcing filler like "no action needed" onto
+   announcements such as `UP_TO_DATE` would train agents to skip the
+   field on the diagnostics where it matters.
 3. **`code` values are stable identifiers** (SCREAMING_SNAKE),
    versioned with this spec; agents may branch on them.
 4. **Side-effectful commands are two-phase.** `apply`, `upgrade`,
@@ -74,4 +80,7 @@ Discrepancies between this document and the engine are work items,
 recorded here until fixed — never silently absorbed.
 
 1. (none currently recorded — last checked against `engine/` at
-   contract v0.2)
+   contract v0.3; the v0.2-era finding that nine call sites shipped
+   empty `fix` strings — one of them an error — was resolved by this
+   version's rule 2 rescope plus real fixes on the three sites that
+   had a next step)
