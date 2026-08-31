@@ -103,11 +103,11 @@ one-line teaching failures; budget-driven re-triage), rein-diagnose
 addressed surface; record rejected attributions). Founding positions
 for observe/evolve: `docs/lifecycle.md`; product-level negative space
 and claims discipline: `docs/fitness.md`. Covered additionally by
-`lifecycle_test.go`. Next: host the official registry index + default
-registry URL, codex skill dialect (blocked on verified host facts),
-release automation, then observe's remaining substrates in
-lifecycle.md §4 order (fragment citation telemetry, minimal profile
-as a shipped control mode). Setup-deepening DONE (2026-08-31b):
+`lifecycle_test.go`. Next: codex skill dialect (blocked on
+verified host facts), then observe's remaining substrates in
+lifecycle.md §4 order (gate-can-fail standing check, fragment
+citation telemetry, cost surfaces; minimal profile as a shipped
+control mode). Setup-deepening DONE (2026-08-31b):
 **`rein inspect`** (spec/inspection.md — mechanical discovery: toolchain,
 test candidates with provenance, CI, lint configs, instruction corpus
 incl. nested files, config surfaces, git churn high-touch map, docs
@@ -173,4 +173,9 @@ the engine (selection: flag > harness.yaml > default;
 spec/registry.md v0.2, `NO_REGISTRY` retired as an impossible state);
 the HTTP transport exercised end to end by httptest-backed tests
 (fetch, sha verify, vendor, tamper refusal) and live against the
-Pages index. Debt ledger's registry row retired.
+Pages index. Debt ledger's registry row retired. Release automation DONE
+(2026-08-31f): tag `v*` → verify gate → static binaries (linux/darwin
+amd64+arm64, windows amd64; CGO off, trimpath) + SHA256SUMS → GitHub
+release; `engine.Version` became a var so releases stamp the tag via
+ldflags while source builds stay `-dev`; proven by cutting v0.1.0 and
+running the downloaded artifact.

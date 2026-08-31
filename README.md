@@ -57,6 +57,21 @@ host degradations. `rein plan` prices what it proposes: the rendered
 instruction file is a budget the agent pays on every turn, so growth
 is a decision, never an accident.
 
+## Install
+
+Grab a static binary from
+[releases](https://github.com/joaofreitas04/freerein/releases)
+(checksums in `SHA256SUMS`), or build from source:
+
+```
+go build -o rein ./engine/cmd/rein
+```
+
+Released binaries report their tag from `rein version`; source builds
+report `-dev`. The default registry is
+`https://joaofreitas04.github.io/freerein/index.json` — override with
+`--registry` or `registry:` in `harness.yaml`.
+
 ## Status
 
 Design phase. Start at `docs/design.md`, then `docs/lifecycle.md`

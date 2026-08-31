@@ -22,8 +22,12 @@ import (
 	"github.com/joaofreitas04/freerein/engine/internal/resolve"
 )
 
+// Version is the engine version. A var, not a const: release builds
+// stamp the tag over it with -ldflags "-X"; source builds stay -dev
+// so a binary always says which kind it is.
+var Version = "0.1.0-dev"
+
 const (
-	Version      = "0.1.0-dev"
 	ConfigName   = "harness.yaml"
 	OverridesDir = ".rein/overrides"
 	OutDir       = ".rein/out"

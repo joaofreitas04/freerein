@@ -1,0 +1,49 @@
+# Tag v* -> gate -> static binaries -> GitHub release.
+#
+# Same single-truth rules as the other workflows: the only check is
+# `bash scripts/verify` (a release of an unverified tree must be
+# impossible), the toolchain comes from go.mod, and the version comes
+# from the tag — stamped over engine.Version so a released binary
+# reports its tag and a source build reports -dev. Checksums ship
+# beside the binaries; a downloader can pin like the registry does.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+      - run: bash scripts/verify
+      - name: build static binaries
+        run: |
+          set -eu
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64; do
+            os="${target%/*}"; arch="${target#*/}"
+            out="dist/rein_${os}_${arch}"
+            [ "$os" = windows ] && out="$out.exe"
+            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" \
+              go build -trimpath \
+                -ldflags "-s -w -X github.com/joaofreitas04/freerein/engine/internal/engine.Version=$version" \
+                -o "$out" ./engine/cmd/rein
+          done
+          (cd dist && sha256sum * > SHA256SUMS)
+      - name: create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "rein $GITHUB_REF_NAME" \
+            --verify-tag \
+            --notes "Static \`rein\` binaries. Verify downloads against SHA256SUMS. The engine emits one JSON envelope per invocation (spec/cli-envelope.md); \`rein version\` reports ${GITHUB_REF_NAME#v}."
