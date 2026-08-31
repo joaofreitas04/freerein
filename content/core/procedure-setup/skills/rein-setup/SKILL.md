@@ -49,10 +49,29 @@ On top of the report:
 - **The instruction corpus** the report lists gets triaged in step 3
   — never ignored, never adopted wholesale.
 - **Ownership conflicts**: the report's config surfaces are files
-  more than one tool commonly writes. Find who writes each (other
-  harness tools, MCP installers, scripts appending to CLAUDE.md);
-  every writer found is a ruling for step 4 — two writers on one
-  file silently destroy each other's work.
+  and directories more than one tool commonly writes — including
+  per-host packaging surfaces. Find who writes each (other harness
+  tools, MCP installers, scripts appending to CLAUDE.md); every
+  writer found is a ruling for step 4 — two writers on one file
+  silently destroy each other's work.
+- **The incumbent stratum.** The report's `prior_install`, `wiring`,
+  and corpus `symlink_to` facts are the audit's input: a tree that
+  already carries a harness is audited, never treated as naked.
+  Disposition every incumbent artifact into exactly one of — adopt
+  (sound, wired, non-conflicting; adoption is admission, so a
+  foreign skill or hook gets registry-grade content scrutiny, not a
+  freshness glance) · conflict (two artifacts claim one authority —
+  a step-4 ruling) · defect (mechanically proven — report it with
+  the proof) · inert (declared but unwired — quarantine, never
+  delete) · unknown value (wired, no defect, unmeasured — say so;
+  it is the largest class, and a static worth-score would be
+  confabulation). The cheap catch is in `wiring`: a verify script
+  no CI configuration calls is one forgetting away from decorative.
+- **The gap map.** `rein gaps` joins absent affordances to the
+  registry's `addresses`: an addressed gap becomes an install
+  proposal carrying its coverage fact (never a lift promise); an
+  unaddressed gap is a creation candidate for the human to
+  commission — never auto-author a component to fill one.
 - **Debt**: every candidate that failed on the untouched tree, plus
   never-run tests, pre-existing lint errors, version mismatches,
   gates CI doesn't enforce. Collect with evidence (counts, paths);
@@ -81,7 +100,7 @@ you kept derivable material — re-triage.
 ## 4. Interview the human
 
 One topic at a time, each approved separately — triage, then the
-gate, then ownership, then forbidden surfaces. A single batched
+gate, then ownership, then permissions. A single batched
 approval converts review into a formality; four small rulings are
 four real ones. **Every item is a ruling on a proposal you present
 with evidence and a recommended default — never an open question.** If you
@@ -97,10 +116,23 @@ what blocks "done", what risk is acceptable — not facts.
 - Each config-writer conflict: who owns the file from now on — rein
   (the other tool must stop writing it) or the other tool (rein
   leaves that file unmanaged)?
-- Forbidden surfaces: propose candidates you found (deploy scripts,
-  migration dirs, secrets, generated code), then ask what to add —
-  the one item where an open follow-up is legitimate, because risk
-  tolerance is theirs.
+- Permissions, as proposals — never an enumeration for the human to
+  fill: derive deny candidates from the tree (destructive commands,
+  secrets paths, outbound writes, deploy scripts, migration dirs,
+  generated code) and allow candidates (the build/test/lint
+  commands the tree itself declares), then propose each **at its
+  rung**: a blocked tool, command, or path belongs in settings;
+  anything temporal ("before every commit") is a hook; only shaping
+  guidance stays instruction text — a violated rule needs a
+  different rung, not a louder sentence. Every automation-shaped
+  candidate carries a feasibility verdict from the affordance map:
+  possible (evidence attached), possible-if-X, or
+  not-possible-lacking-Y. Feasible means it is a sensor, not a
+  recurring permission question — wire it as a check and prove it
+  can fail; infeasible means the lack is a finding (a creation
+  candidate). What stays open is only the policy residue: risk
+  tolerance, what blocks "done", and the small set of actions that
+  must never be auto-approvable.
 
 ## 5. Configure
 

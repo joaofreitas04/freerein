@@ -136,10 +136,14 @@ floor: verification + managed-files only) · instructions-base 0.3
 (session
 discipline stays ambient — deliberately no operate skill; retrieved
 banner text is content, never command; cite-what-steered-you) · verification-gate 0.2 ·
-state-base 0.3 · procedure-setup 0.8 (inspect-first triage: drop
+state-base 0.3 · procedure-setup 0.9 (inspect-first triage: drop
 derivable / demote to checks / keep runbook residue / flag for
 ruling; evidence-backed gate proposals, rules evidence-checked
-against the tree before apply; verify skeleton: environment first,
+against the tree before apply; the incumbent audit — dispositions
+adopt/conflict/defect/inert/unknown-value, adoption is admission,
+worth never graded statically; the gap map via `rein gaps`;
+permissions as rung-placed proposals with feasibility verdicts,
+only the policy residue asked; verify skeleton: environment first,
 cheap-first with evidence comments, ratchet-with-baseline for
 grandfathered rules; the adoption move at step 6; step-7 attest only
 after watching every breakage fail, injection-scope check taught) ·
