@@ -33,6 +33,8 @@ commands:
   probes    list the affordance vocabulary requires: entries may use
   note      append a note entry to the harness journal
   attest    record a proof a procedure performed (subject: gate-can-fail)
+  cite      record that a fragment shaped an action (no argument: read
+            the counts back, lowest first, with decay candidates)
   journal   read the harness history back out (newest first, offloaded;
             --kind/--since/--path filter, --limit caps inline entries)
   version   engine version
@@ -117,6 +119,12 @@ func main() {
 		g.Inspect(e)
 	case "journal":
 		g.Journal(e, engine.JournalOpts{Kind: *kind, Since: *since, Path: *pathF, Limit: *limit})
+	case "cite":
+		id := ""
+		if len(positionals) > 0 {
+			id = positionals[0]
+		}
+		g.Cite(e, id)
 	case "attest":
 		if len(positionals) == 0 {
 			e.Fail("MISSING_ARGUMENT", "attest needs a subject", "e.g. `rein attest gate-can-fail`")

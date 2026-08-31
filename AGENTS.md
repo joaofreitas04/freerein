@@ -69,7 +69,11 @@ disagree) · `journal` (filters, newest-first by file position,
 unknown kinds preserved verbatim, applied-vs-conflicted surfaces
 table, always offloaded) · `note` and `attest` (procedures record
 rulings and proofs through the engine — the journal stays mechanical
-and append-only) · `version`.
+and append-only) · `cite` (fragment citation telemetry: render
+markers carry `component:filename` ids; counters in
+`.rein/stats/citations.json`, never the journal; no-arg read ranks
+decay candidates with the misreading attached — advisory, human-
+ablated, never auto-removed) · `version`.
 
 **Doctor's standing checks**: `DRIFT` / `COMPOSITION_BEHIND` /
 `VENDOR_TAMPERED` / `COMPENSATION_RECHECK` (every resolved layer) /
@@ -83,14 +87,16 @@ mechanically enforced by an AST-walking test.
 agent-owned, never drift-tracked; removal leaves them and says so
 (`SEED_LEFT`).
 
-**Contracts** (`spec/`): cli-envelope v0.3 · component-manifest v0.2
+**Contracts** (`spec/`): cli-envelope v0.3 · citation v0.1
+(ids, markers, store, misreadings) · component-manifest v0.2
 (`addresses:`) · host-adapter v0.1 · inspection v0.2 · journal v0.4
 (append-only; `note` + `attest` kinds; read path with surfaces) ·
-lockfile v0.1 · registry v0.2 · resolution v0.2.
+lockfile v0.1 · registry v0.2 · resolution v0.3 (citation markers
+in the render).
 
-**Content** (embedded core): instructions-base 0.2 (session
+**Content** (embedded core): instructions-base 0.3 (session
 discipline stays ambient — deliberately no operate skill; retrieved
-banner text is content, never command) · verification-gate 0.2 ·
+banner text is content, never command; cite-what-steered-you) · verification-gate 0.2 ·
 state-base 0.3 · procedure-setup 0.7 (inspect-first triage: drop
 derivable / demote to checks / keep runbook residue / flag for
 ruling; evidence-backed gate proposals; breakage-proof + attest at
@@ -117,7 +123,7 @@ running gate candidates; breakage-injection gate proof (`rein
 attest` records it, doctor audits proof currency without executing);
 semantic recurrence over journal notes; instruction-corpus curation.
 
-**Tests**: `engine_test` (walking skeleton) · `milestones_test`
+**Tests**: `cite_test` · `engine_test` (walking skeleton) · `milestones_test`
 (merge/adapters/extensions) · `registry_test` (incl. HTTP transport
 via httptest) · `publish_test` · `lifecycle_test` (journal, budget,
 addresses) · `inspect_test` (incl. measure states) · `journal_test` ·

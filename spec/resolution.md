@@ -1,4 +1,4 @@
-# Resolution — contract v0.2 (draft)
+# Resolution — contract v0.3 (draft)
 
 How `harness.yaml` (intent) becomes a resolved file set.
 
@@ -22,9 +22,13 @@ the list it is declared under.
    The effective content of any path is readable in exactly one
    place. (Instruction-file composition happens by rendering an
    `AGENTS.md.d/` fragment directory into the adapter's instruction
-   file — fragments are separate paths, so the rule holds. Paths
-   under `skills/` are likewise host-neutral and map onto the
-   adapter's skills directory at render time.)
+   file — fragments are separate paths, so the rule holds. Each
+   fragment renders behind its citation marker,
+   `<!-- rein:fragment <component:filename> -->`, the id contract of
+   spec/citation.md; the marker bytes are part of the render and so
+   part of rule 6's budget. Paths under `skills/` are likewise
+   host-neutral and map onto the adapter's skills directory at render
+   time.)
 2. A later layer cannot prevent an earlier (higher-priority) layer
    from overriding it: distribution does not confer authority.
 3. `rein dump` prints the resolved set — every path, its winning

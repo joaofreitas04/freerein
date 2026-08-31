@@ -1,0 +1,17 @@
+{
+  "formatVersion": "0.1.0",
+  "citations": {
+    "instructions-base:00-base": {
+      "count": 1,
+      "last": "2026-08-31T11:42:29Z"
+    },
+    "state-base:30-state": {
+      "count": 1,
+      "last": "2026-08-31T11:42:59Z"
+    },
+    "verification-gate:20-verification": {
+      "count": 1,
+      "last": "2026-08-31T11:42:59Z"
+    }
+  }
+}

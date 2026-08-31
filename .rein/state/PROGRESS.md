@@ -22,9 +22,15 @@ survive in the code: what is next, what is unproven, what is blocked.
 evolve, and evolve's mechanics do not land until its substrates
 exist:
 
-1. Fragment citation telemetry — not started.
-2. Cost surfaces beyond the instruction file — not started; plan
+1. Cost surfaces beyond the instruction file — not started; plan
    prices the instruction composition only.
+
+Fragment citation telemetry shipped 2026-08-31 as designed and
+ruled: spec/citation.md v0.1, resolution v0.3 markers, `rein cite`,
+instructions-base 0.3. Live on this repo with three honest citations;
+`local-overrides:10-project` is the sole day-one decay candidate —
+which is itself the misreading in action (day-one zeros mean nothing;
+the counts need sessions of real use before ablation is informed).
 
 Gate-can-fail (previously first here) shipped 2026-08-31: the open
 question resolved on the judgment/computation line — the skill still
@@ -49,27 +55,7 @@ shipped control mode; release automation.
 
 ## In flight
 
-Fragment citation telemetry: designed, awaiting the owner's ruling
-(2026-08-31). Proposal — mechanics for lifecycle.md §1.2, all of
-whose positions it inherits: fragment IDs are `component:filename`
-(version-free, per-fragment-file — per-rule granularity only if real
-data demands it); the render inserts one `<!-- rein:fragment <id> -->`
-comment per fragment (extends the existing rendered-by header
-pattern; the bytes land in plan's budget, so the cost is priced);
-`rein cite <id>` increments a counter + last-cited stamp in
-`.rein/stats/citations.json` (engine-written, deterministic key
-order, committed; NOT the journal — counters are not history),
-validating the ID against the current composition; `rein cite` with
-no args reads back counts joined against the composition, ranking
-zero/stale-citation fragments as decay candidates with the §1.5
-misreading attached in the envelope ("zero can mean decay or
-mastery — ablate, never sweep"); one standing rule added to
-instructions-base (0.3) asking agents to cite a fragment that shaped
-an action. New spec/citation.md v0.1 (IDs, marker, store, commands,
-misreadings); resolution.md gains the marker rule. Deliberately out:
-automatic removal, per-rule IDs, hook-based auto-citation (hosts
-unverified — the convention is instruction-rung, and citation
-compliance being imperfect is itself named evidence).
+Nothing.
 
 ## Noted, not yet actioned
 

@@ -112,9 +112,25 @@ type Rendered struct {
 	Mode    uint32   `json:"-"`
 }
 
+// FragmentID is a fragment's stable citation identity
+// (spec/citation.md): component name, version-free so counts survive
+// upgrades, then the fragment filename without extension —
+// "instructions-base:00-base". The render marker and the cite
+// validator both derive it here, so they cannot disagree.
+func FragmentID(componentRef, path string) string {
+	name := componentRef
+	if i := strings.IndexByte(name, '@'); i >= 0 {
+		name = name[:i]
+	}
+	base := strings.TrimPrefix(path, FragmentDir)
+	base = strings.TrimSuffix(base, ".md")
+	return name + ":" + base
+}
+
 // Render walks the resolved set through the adapter. Instruction
 // fragments are concatenated (sorted by path) into the adapter's
-// instruction file; every other path passes through unchanged.
+// instruction file, each preceded by its citation marker
+// (spec/citation.md); every other path passes through unchanged.
 func Render(s *Set, a *adapter.Adapter) (map[string]*Rendered, error) {
 	out := map[string]*Rendered{}
 	var fragPaths []string
@@ -130,6 +146,7 @@ func Render(s *Set, a *adapter.Adapter) (map[string]*Rendered, error) {
 		b.WriteString("<!-- rendered by rein; do not hand-edit — edit .rein/overrides/ and run `rein apply` -->\n\n")
 		for _, p := range fragPaths {
 			e := s.Entries[p]
+			b.WriteString("<!-- rein:fragment " + FragmentID(e.Winner.Component, p) + " -->\n")
 			b.Write(e.Content)
 			if !strings.HasSuffix(string(e.Content), "\n") {
 				b.WriteString("\n")

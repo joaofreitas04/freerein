@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "resolved_at": "2026-08-31T11:33:38Z",
+  "resolved_at": "2026-08-31T11:42:29Z",
   "engine": "rein 0.1.0-dev",
   "adapter": {
     "name": "claude-code",
@@ -66,11 +66,11 @@
     },
     "CLAUDE.md": {
       "layer": "render",
-      "component": "instructions-base@0.2.0, local-overrides@local, verification-gate@0.2.0, state-base@0.3.0",
-      "hash": "sha256:dd7ccfebfb3d4a0713ade5686d04ccca2abf1929fbcb7b8e62ca53a3fbaf5dab",
+      "component": "instructions-base@0.3.0, local-overrides@local, verification-gate@0.2.0, state-base@0.3.0",
+      "hash": "sha256:b86bb991062a40a0650da3e52d2cdfbee2a21b6e603b75e56f0dcf96eb2a510f",
       "shadowed": null,
       "refs": [
-        "instructions-base@0.2.0",
+        "instructions-base@0.3.0",
         "local-overrides@local",
         "verification-gate@0.2.0",
         "state-base@0.3.0"
