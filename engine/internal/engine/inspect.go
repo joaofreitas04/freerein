@@ -28,6 +28,12 @@ type Candidate struct {
 type CorpusFile struct {
 	Path  string `json:"path"`
 	Bytes int64  `json:"bytes"`
+	// SymlinkTo names the link target when the corpus file is a
+	// symlink: the filename does not say which file is real, and a
+	// triage that counts one body of rules twice reads the repo
+	// wrong. Bytes are the target's (what an agent reading the path
+	// would load).
+	SymlinkTo string `json:"symlink_to,omitempty"`
 }
 
 type Churn struct {
@@ -333,9 +339,18 @@ func (g *Engine) detectFiles(list []string) []string {
 func (g *Engine) detectInstructionCorpus() []CorpusFile {
 	var out []CorpusFile
 	add := func(rel string) {
-		if fi, err := os.Stat(filepath.Join(g.Repo, rel)); err == nil && !fi.IsDir() {
-			out = append(out, CorpusFile{Path: rel, Bytes: fi.Size()})
+		full := filepath.Join(g.Repo, rel)
+		fi, err := os.Stat(full) // follows links: size is what a reader loads
+		if err != nil || fi.IsDir() {
+			return
 		}
+		entry := CorpusFile{Path: rel, Bytes: fi.Size()}
+		if li, lerr := os.Lstat(full); lerr == nil && li.Mode()&os.ModeSymlink != 0 {
+			if target, terr := os.Readlink(full); terr == nil {
+				entry.SymlinkTo = filepath.ToSlash(target)
+			}
+		}
+		out = append(out, entry)
 	}
 	for _, f := range rootInstructionFiles {
 		add(f)

@@ -152,6 +152,41 @@ func TestInspectIncumbentBreadth(t *testing.T) {
 	}
 }
 
+// The filename does not say which file is real: portability repos
+// ship one host's instruction file as a symlink to another's, in
+// both directions. The corpus resolves the link and says so, so
+// triage never counts one body of rules twice.
+func TestInspectCorpusResolvesSymlinks(t *testing.T) {
+	repo := t.TempDir()
+	seedFile(t, repo, "CLAUDE.md", "# the real rules, long enough to notice\n")
+	if err := os.Symlink("CLAUDE.md", filepath.Join(repo, "AGENTS.md")); err != nil {
+		t.Skip("symlinks unavailable here")
+	}
+	g := &engine.Engine{Repo: repo, Content: content.FS}
+	e := envelope.New("inspect")
+	g.Inspect(e)
+	if !e.OK {
+		t.Fatalf("inspect failed: %+v", e.Diagnostics)
+	}
+	b, _ := os.ReadFile(filepath.Join(repo, ".rein/out/inspect.json"))
+	var r engine.InspectReport
+	if err := json.Unmarshal(b, &r); err != nil {
+		t.Fatal(err)
+	}
+	var link *engine.CorpusFile
+	for i, c := range r.Instruction {
+		if c.Path == "AGENTS.md" {
+			link = &r.Instruction[i]
+		}
+	}
+	if link == nil {
+		t.Fatalf("the symlinked file is still corpus, got %+v", r.Instruction)
+	}
+	if link.SymlinkTo != "CLAUDE.md" {
+		t.Fatalf("the link must be resolved and stated, got %+v", *link)
+	}
+}
+
 // requires-gating and inspect share detection: a component requiring
 // test-runner fails plan in a bare repo and passes once tests exist.
 func TestProbeGating(t *testing.T) {
