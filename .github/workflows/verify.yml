@@ -1,0 +1,34 @@
+# CI runs the gate; it never restates it.
+#
+# `scripts/verify` is this repo's single definition of done. A workflow
+# that enumerated gofmt/vet/test/build itself would be a second truth,
+# free to drift from the gate until green-locally and green-on-push
+# mean different things. So there is exactly one check step here, and
+# tightening CI means editing `.rein/overrides/scripts/verify`.
+name: verify
+
+on:
+  # main plus every PR — the two paths work actually lands on.
+  # Unfiltered `push:` would double-run each PR branch for nothing.
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          # go.mod is the one declaration of the toolchain version;
+          # naming it again here would be the same second-truth bug.
+          go-version-file: go.mod
+      - run: bash scripts/verify

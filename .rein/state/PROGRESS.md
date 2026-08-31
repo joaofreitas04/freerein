@@ -51,10 +51,6 @@ Nothing.
 Found in the 2026-08-31 audit, recorded here rather than bundled into
 an unrelated change:
 
-- **No CI.** No `.github/` at all; `scripts/verify` runs only when
-  someone remembers. For a project whose central claim is "done means
-  verified", the gate is unenforced on push. Cheapest real fix on the
-  list.
 - **Debt ledger is empty.** `.rein/state/DEBT.md` has a header row
   and no entries, while the blocked items below are exactly what it
   exists to hold. Its doctor audits (`DEBT_ROW_INCOMPLETE`,
@@ -79,6 +75,14 @@ an unrelated change:
 - inspect's detection tables (manifests, test/lint/CI configs) are a
   curated list, not exhaustive; grow them from real setup runs, not
   speculation.
+- Whether `rein doctor` clean belongs in the gate is unsettled. This
+  repo is self-hosted, so a hand-edited CLAUDE.md is a real failure
+  mode that only doctor catches — but `scripts/verify` does not run
+  it, and CI deliberately runs nothing the gate does not. Putting
+  doctor in CI alone would make CI stricter than the gate: verify
+  green locally, red on push. If it should block, it belongs in
+  `.rein/overrides/scripts/verify`, and that is a deliberate change to
+  the definition of done, not a drive-by.
 
 ## Blocked / needs a human
 
