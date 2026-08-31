@@ -187,6 +187,60 @@ func TestInspectCorpusResolvesSymlinks(t *testing.T) {
 	}
 }
 
+// Wired-vs-declared is a static cross-check: a verify script no CI
+// workflow calls is unwired — a cheap mechanical finding. Whether a
+// wired artifact is ever consumed is telemetry's question and the
+// report refuses to guess it.
+func TestInspectWiring(t *testing.T) {
+	repo := t.TempDir()
+	seedFile(t, repo, "scripts/verify", "#!/bin/sh\nexit 0\n")
+	seedFile(t, repo, ".github/workflows/ci.yml", "on: push\njobs:\n  v:\n    steps:\n      - run: echo hi\n")
+	g := &engine.Engine{Repo: repo, Content: content.FS}
+	e := envelope.New("inspect")
+	g.Inspect(e)
+	if !e.OK {
+		t.Fatalf("inspect failed: %+v", e.Diagnostics)
+	}
+	b, _ := os.ReadFile(filepath.Join(repo, ".rein/out/inspect.json"))
+	var r engine.InspectReport
+	if err := json.Unmarshal(b, &r); err != nil {
+		t.Fatal(err)
+	}
+	if len(r.Wiring) != 1 || r.Wiring[0].Artifact != "scripts/verify" {
+		t.Fatalf("a declared gate gets a wiring row, got %+v", r.Wiring)
+	}
+	if r.Wiring[0].Wired || !strings.Contains(r.Wiring[0].Evidence, "no CI") {
+		t.Fatalf("a gate no workflow calls is unwired, with the evidence teaching it, got %+v", r.Wiring[0])
+	}
+
+	seedFile(t, repo, ".github/workflows/ci.yml", "on: push\njobs:\n  v:\n    steps:\n      - run: bash scripts/verify\n")
+	e = envelope.New("inspect")
+	g.Inspect(e)
+	b, _ = os.ReadFile(filepath.Join(repo, ".rein/out/inspect.json"))
+	if err := json.Unmarshal(b, &r); err != nil {
+		t.Fatal(err)
+	}
+	if len(r.Wiring) != 1 || !r.Wiring[0].Wired ||
+		!strings.Contains(r.Wiring[0].Evidence, ".github/workflows/ci.yml") {
+		t.Fatalf("a referenced gate is wired, evidence naming the workflow, got %+v", r.Wiring)
+	}
+
+	// no gate declared: nothing to cross-check, no row (fresh struct —
+	// omitempty means an absent field must not inherit a stale decode)
+	bare := t.TempDir()
+	seedFile(t, bare, "go.mod", "module x\n")
+	e = envelope.New("inspect")
+	(&engine.Engine{Repo: bare, Content: content.FS}).Inspect(e)
+	b, _ = os.ReadFile(filepath.Join(bare, ".rein/out/inspect.json"))
+	var bareReport engine.InspectReport
+	if err := json.Unmarshal(b, &bareReport); err != nil {
+		t.Fatal(err)
+	}
+	if len(bareReport.Wiring) != 0 {
+		t.Fatalf("wiring rows exist only for declared artifacts, got %+v", bareReport.Wiring)
+	}
+}
+
 // requires-gating and inspect share detection: a component requiring
 // test-runner fails plan in a bare repo and passes once tests exist.
 func TestProbeGating(t *testing.T) {

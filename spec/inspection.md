@@ -27,6 +27,7 @@ to the human. Detection is computation; execution is judgment.
 | `instruction_corpus` | every agent instruction file (root and nested, bounded walk), with byte sizes — the input to setup's triage |
 | `config_surfaces` | agent-config files and directories more than one tool commonly writes, including per-host packaging surfaces — the input to the ownership interview |
 | `prior_install` | whether the tree already carries this product's own harness (manifests, journal, base/overrides dirs), with the marker paths as evidence — a repo with an incumbent is audited, never treated as naked; the detector never counts its own offloaded output |
+| `wiring` | declared-vs-wired cross-checks: an artifact that exists (declared) and what statically references it (wired), evidence attached either way. The third liveness level — consumed, whether it influences runs — is undecidable statically and is never guessed: that is the consumption-evidence substrate's job. Rows grow from real runs; the first is the verify gate vs the detected CI configs |
 | `high_touch` | the most-changed paths from local git history — an enumerated map of where erosion happens (omitted, with a note, when history is unavailable) |
 | `docs_tree` | whether a docs territory exists for the instruction file to be a map of |
 | `affordances` | the boolean projection of all of the above, aligned with the probe vocabulary |

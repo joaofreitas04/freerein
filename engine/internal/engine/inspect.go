@@ -52,6 +52,19 @@ type PriorInstall struct {
 	Evidence []string `json:"evidence,omitempty"`
 }
 
+// Wiring is one declared-vs-wired cross-check row: the artifact
+// exists (declared), and something statically reads or executes it
+// (wired), with the evidence either way. Whether a wired artifact
+// ever influences a run is the third liveness level — consumed —
+// which no static read can decide; that stays telemetry's question
+// and this report never guesses it.
+type Wiring struct {
+	Artifact string `json:"artifact"`
+	Declared bool   `json:"declared"`
+	Wired    bool   `json:"wired"`
+	Evidence string `json:"evidence"`
+}
+
 type LangStat struct {
 	Language string `json:"language"`
 	Files    int    `json:"files"`
@@ -97,6 +110,7 @@ type InspectReport struct {
 	Instruction    []CorpusFile    `json:"instruction_corpus"`
 	ConfigSurfaces []string        `json:"config_surfaces"`
 	PriorInstall   PriorInstall    `json:"prior_install"`
+	Wiring         []Wiring        `json:"wiring,omitempty"`
 	HighTouch      []Churn         `json:"high_touch,omitempty"`
 	DocsTree       string          `json:"docs_tree,omitempty"`
 	Affordances    map[string]bool `json:"affordances"`
@@ -420,6 +434,28 @@ func (g *Engine) detectHighTouch() ([]Churn, string) {
 	return out, ""
 }
 
+// detectWiring cross-checks declared artifacts against what
+// statically references them. One row today — the verify gate vs the
+// detected CI configs — grown from real runs like every table.
+func (g *Engine) detectWiring(ciFiles []string) []Wiring {
+	const gate = "scripts/verify"
+	if !g.fileExists(gate) {
+		return nil
+	}
+	for _, ci := range ciFiles {
+		b, err := os.ReadFile(filepath.Join(g.Repo, ci))
+		if err == nil && strings.Contains(string(b), gate) {
+			return []Wiring{{Artifact: gate, Declared: true, Wired: true,
+				Evidence: "referenced by " + ci}}
+		}
+	}
+	evidence := "no CI configuration references it — a gate only local habit runs is one forgetting away from decorative"
+	if len(ciFiles) == 0 {
+		evidence = "no CI configuration exists to call it — " + evidence[strings.Index(evidence, "a gate"):]
+	}
+	return []Wiring{{Artifact: gate, Declared: true, Wired: false, Evidence: evidence}}
+}
+
 func (g *Engine) detectDocsTree() string {
 	for _, dir := range []string{"docs", "doc"} {
 		matches, _ := filepath.Glob(filepath.Join(g.Repo, dir, "*.md"))
@@ -449,6 +485,7 @@ func (g *Engine) buildInspectReport() *InspectReport {
 	r.ConfigSurfaces = g.detectFiles(configSurfaces)
 	r.PriorInstall.Evidence = g.detectFiles(priorInstallMarkers)
 	r.PriorInstall.Present = len(r.PriorInstall.Evidence) > 0
+	r.Wiring = g.detectWiring(r.CI)
 	var note string
 	r.HighTouch, note = g.detectHighTouch()
 	if note != "" {
