@@ -81,7 +81,48 @@ shipped control mode; release automation.
 
 ## In flight
 
-Nothing.
+Evolve mechanics: designed, awaiting the owner's ruling (2026-08-31).
+Proposal — the machinery for lifecycle §2, split on the
+judgment/computation line; positions §2.4/§2.5/§2.6 already have
+their substrates (ADDRESSES_OVERLAP, COMPENSATION_RECHECK, minimal
+profile), so what is missing is §2.1–§2.3 made recordable and
+auditable:
+
+- **journal v0.5, two kinds.** `proposal` — engine-validated
+  mandatory fields, refuse-before-generate (the rein-decide
+  precedent): `surface` (the artifact/component being changed),
+  `change` (one line), `prediction` (falsifiable: next time X, Y
+  instead of Z), `measurement` (what will decide, named BEFORE the
+  change — gate re-run / paired-vs-minimal / held-out case),
+  `baseline` (the condition compared against), `nominated_by`
+  (cite-decay | compensation-recheck | overlap | recurrence |
+  human). `verdict` — `proposal` (id), `outcome`
+  (accepted|rejected), `evidence` (the measurement's result, never
+  the argument). Ids are short content hashes assigned at propose
+  time; rejected verdicts are kept forever (§2.2 — the journal
+  already never forgets).
+- **Two flat commands** (`rein propose`, `rein verdict` — matching
+  note/attest/cite, not a subcommand tree), fields as flags, missing
+  fields refused with the full list.
+- **The one engine-enforceable position: §2.3.** `rein propose`
+  REFUSES while an open (unverdicted) proposal exists, naming it —
+  "one change at a time" as a hard invariant, no force flag. Doctor
+  gains a standing info (`PROPOSAL_OPEN`) naming open proposals.
+- **§2.1 stays honest about its limits.** The engine cannot verify
+  who runs a measurement; it enforces shape (a verdict must carry
+  evidence and reference the pre-named measurement), and the spec
+  says identity-of-accepter is procedure discipline, not mechanics.
+- **procedure-evolve 0.1 (`rein-evolve`)**: the judgment loop —
+  nominate ONE candidate from the observe substrates (cite decay
+  list, COMPENSATION_RECHECK, ADDRESSES_OVERLAP, journal
+  recurrence), propose through the engine, change through overrides,
+  run the pre-named measurement, verdict with evidence; a rejected
+  change is reverted but its verdict stays; ambiguous measurements
+  go to the human. Bias per §2.4: before adding, strengthen; before
+  strengthening, remove.
+- Deliberately out: automating the measurement itself (running repo
+  work under two profiles is judgment + execution, skill territory);
+  held-out case management beyond skill guidance; any auto-accept.
 
 ## Noted, not yet actioned
 
