@@ -55,6 +55,24 @@ flags:
   --human            human-readable output instead of the JSON envelope
 `
 
+// splitArgs parses flags interleaved with positionals. Go's flag
+// package stops at the first non-flag; an agent writing
+// `rein add x --registry y` must not have the flag silently dropped.
+func splitArgs(fs *flag.FlagSet, args []string) ([]string, error) {
+	var positionals []string
+	rest := args
+	for {
+		if err := fs.Parse(rest); err != nil {
+			return nil, err
+		}
+		if fs.NArg() == 0 {
+			return positionals, nil
+		}
+		positionals = append(positionals, fs.Arg(0))
+		rest = fs.Args()[1:]
+	}
+}
+
 func main() {
 	fs := flag.NewFlagSet("rein", flag.ContinueOnError)
 	dir := fs.String("dir", ".", "target repo")
@@ -83,20 +101,9 @@ func main() {
 		os.Exit(2)
 	}
 	cmd := os.Args[1]
-	// allow flags after positionals (Go's flag package stops at the
-	// first non-flag; an agent writing `rein add x --registry y`
-	// must not have the flag silently dropped)
-	var positionals []string
-	rest := os.Args[2:]
-	for {
-		if err := fs.Parse(rest); err != nil {
-			os.Exit(2)
-		}
-		if fs.NArg() == 0 {
-			break
-		}
-		positionals = append(positionals, fs.Arg(0))
-		rest = fs.Args()[1:]
+	positionals, err := splitArgs(fs, os.Args[2:])
+	if err != nil {
+		os.Exit(2)
 	}
 
 	e := envelope.New(cmd)

@@ -6,6 +6,7 @@ package envelope
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -45,12 +46,20 @@ func (e *Envelope) Diag(sev Severity, code, message, fix string) {
 
 func (e *Envelope) Fail(code, message, fix string) { e.Diag(Error, code, message, fix) }
 
-// Emit writes the envelope and returns the process exit code.
+// Emit writes the envelope to stdout and returns the process exit
+// code (spec/cli-envelope.md rule 6: 0 = ok, 1 = not ok; exit 2 is
+// main's, for invocations that fail before a command exists).
 func (e *Envelope) Emit(human bool) int {
+	return e.EmitTo(os.Stdout, human)
+}
+
+// EmitTo is Emit against any writer — the seam that makes the
+// exit-code and wire contracts testable.
+func (e *Envelope) EmitTo(w io.Writer, human bool) int {
 	if human {
-		e.emitHuman()
+		e.emitHuman(w)
 	} else {
-		enc := json.NewEncoder(os.Stdout)
+		enc := json.NewEncoder(w)
 		enc.SetIndent("", "  ")
 		_ = enc.Encode(e)
 	}
@@ -60,24 +69,24 @@ func (e *Envelope) Emit(human bool) int {
 	return 1
 }
 
-func (e *Envelope) emitHuman() {
+func (e *Envelope) emitHuman(w io.Writer) {
 	status := "ok"
 	if !e.OK {
 		status = "FAILED"
 	}
-	fmt.Printf("rein %s: %s\n", e.Command, status)
+	fmt.Fprintf(w, "rein %s: %s\n", e.Command, status)
 	for _, d := range e.Diagnostics {
-		fmt.Printf("  [%s] %s: %s\n", d.Severity, d.Code, d.Message)
+		fmt.Fprintf(w, "  [%s] %s: %s\n", d.Severity, d.Code, d.Message)
 		if d.Fix != "" {
-			fmt.Printf("      fix: %s\n", d.Fix)
+			fmt.Fprintf(w, "      fix: %s\n", d.Fix)
 		}
 	}
 	if e.ConfirmRequired != nil {
 		b, _ := json.MarshalIndent(e.ConfirmRequired, "  ", "  ")
-		fmt.Printf("  confirmation required for:\n  %s\n  re-run with --yes\n", b)
+		fmt.Fprintf(w, "  confirmation required for:\n  %s\n  re-run with --yes\n", b)
 	}
 	if e.Result != nil {
 		b, _ := json.MarshalIndent(e.Result, "  ", "  ")
-		fmt.Printf("  result:\n  %s\n", b)
+		fmt.Fprintf(w, "  result:\n  %s\n", b)
 	}
 }

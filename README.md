@@ -74,7 +74,13 @@ report `-dev`. The default registry is
 
 ## Status
 
-Design phase. Start at `docs/design.md`, then `docs/lifecycle.md`
+The loop is built and self-hosted: this repo's own harness is
+rendered by `rein`, its gate is attested, its history journaled, its
+composition priced. Engine, specs, core content, the hosted registry
+(empty by design — core ships in the binary), releases, and the
+evolve mechanics all exist; what they await is field use, which is
+the doctrine — no mechanism lands that a real run has not demanded.
+Start at `docs/design.md`, then `docs/lifecycle.md`
 (the observe/evolve positions) and `docs/fitness.md` (where FreeRein
 does **not** apply, and the discipline behind every number we
 publish); the public contracts live in `spec/`.

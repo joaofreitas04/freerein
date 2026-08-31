@@ -102,15 +102,14 @@ Nothing.
 Found in the 2026-08-31 audit, recorded here rather than bundled into
 an unrelated change:
 
-- **Coverage, measured (2026-08-31, `-coverpkg=./...`): 74.0%
-  overall.** The formerly "0.0%" packages (registry, resolve,
-  component, adapter, lockfile) are in fact exercised through the
-  engine tests. True cold spots, worth tests when touched next:
-  `Dump` has no test at all; `envelope.Emit`/`emitHuman` are
-  untested, so the exit-code contract (cli-envelope rule 6) rests on
-  reading the code; `Adapters` 0%; both `main` functions 0% (the
-  flags-after-positionals loop is real logic); `detectHighTouch` 18%
-  (needs a fixture repo with actual git history).
+- **Coverage cold spots: mostly paid down (2026-08-31 second pass).**
+  Emit/emitHuman now tested behind an `EmitTo(io.Writer)` seam (exit
+  codes, always-present branch fields, fix omission on the wire);
+  Dump and Adapters tested; the flags-after-positionals loop
+  extracted as `splitArgs` and tested (`engine/cmd/rein/main_test.go`).
+  Remaining, deliberately: `detectHighTouch` (needs a fixture repo
+  with real git history — build it when that code is next touched)
+  and the two `main` wiring functions themselves.
 
 ## Assumptions / open questions
 

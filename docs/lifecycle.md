@@ -28,22 +28,25 @@ stay inside the engine's constraints: offline, deterministic, local.
    between how often it is written and how often it is read. A
    progress file updated every session and never consulted, a skill
    never invoked, a fragment never cited — each is indistinguishable
-   from working until something counts. Planned mechanism: rendered
-   fragments carry stable IDs; a lightweight convention asks agents
-   to cite the ID of a rule that shaped an action; counts accumulate
-   in a separate stats file so the instruction file itself stays
-   byte-stable. The counts are advisory and they rank *decay
+   from working until something counts. Mechanism (shipped,
+   spec/citation.md): rendered fragments carry stable IDs; a
+   lightweight convention asks agents to cite the ID of a rule that
+   shaped an action; counts accumulate in a separate stats file so
+   the instruction file itself stays byte-stable. The counts are advisory and they rank *decay
    candidates*, not importance — a rule so internalized nobody cites
    it is the success case, which is why removal stays a human
    decision informed by a proper ablation, never an automatic sweep.
 3. **A gate must be proven able to fail.** A gate that cannot fail
    and a gate that silently stopped running produce identical output.
    The setup procedure already breaks the tree once to prove the gate
-   red; the observe stage makes that a standing check rather than a
-   birth certificate.
-4. **Cost is part of the picture.** `plan` now prices the rendered
-   instruction file against the host's budget; the same discipline
-   extends to everything installed: a component's cost is what the
+   red; the standing check ships as `rein attest` plus doctor's
+   proof-currency audit (spec/journal.md §9) — the proof is recorded
+   with the gate's hash, and a gate that changed since is stale, not
+   proven.
+4. **Cost is part of the picture.** `plan` prices the rendered
+   instruction file against the host's budget and (shipped,
+   resolution §rule 6) the whole composition in tiers — always,
+   per-session, conditional, with unpriced surfaces named: a component's cost is what the
    agent pays on every turn it is loaded, and a report that shows
    benefit without cost is half a report.
 5. **Every metric ships with its misreading.** Numbers lie in
@@ -122,9 +125,12 @@ into the composition they will then be judged by.
 
 ## 4. Sequencing
 
-Observe ships before evolve, and within observe the order is:
-journal (shipped) → gate-can-fail as a standing check → fragment
-citation telemetry → cost surfaces beyond the instruction file.
-Evolve's mechanics (paired measurement, held-out acceptance) build on
-those substrates and do not land until they exist — an evolution loop
-without observation is a random walk with confidence.
+Observe ships before evolve, and within observe the order was:
+journal → gate-can-fail as a standing check → fragment citation
+telemetry → cost surfaces beyond the instruction file. All four are
+shipped, as is the minimal profile (the §2.6 control condition) and
+evolve's recording mechanics (proposal/verdict, journal contract
+§10–§12) — an evolution loop without observation is a random walk
+with confidence, which is why the substrates landed first. What
+deliberately does not exist yet is any mechanism a real run has not
+demanded: the loop's next input is field use, not further machinery.
