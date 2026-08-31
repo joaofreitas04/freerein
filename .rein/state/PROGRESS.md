@@ -114,6 +114,22 @@ target-side facts for the owner's real install (format drift: 325
 files fail nx format:check; system pnpm crashes under volta node 20;
 fresh clones need the codegen script before anything compiles).
 
+UPDATE, same day: the owner then explicitly directed this session to
+run the full setup autonomously on a SECOND target — a larger private
+workspace of theirs (real repo, in place; names stay out of this
+public repo). That live instruction supersedes the earlier
+interview-is-theirs ruling for that target only; every triage and
+ownership ruling made there is still a DEFAULT, marked pending the
+owner in that repo's PROGRESS, journal note, and local branch
+`field-test-2/rein-setup` (committed locally, NOT pushed, per the
+owner's explicit no-push rule; their original branch restored).
+Findings from that pass are merged below, marked [real]. One
+coordination flag FOR THE OWNER: that repo's journal shows an apply
+at 14:04:12Z this session did not issue — consistent with the
+owner's own install (rein on their PATH) running concurrently;
+if so, this session's 14:13 apply landed on top of it. The journal
+made the collision legible; the owner should reconcile.
+
 ## Field test 2 — preliminary findings (engine-side, from the dry run)
 
 Facts about `rein inspect` 0.2.0 against the real target tree, before
@@ -177,6 +193,54 @@ From the completed bench pass, additional and confirming [bench]:
    already-curated 34-line corpus (drop 1 / demote 1 / keep / flag
    root notes), and the breakage proof caught a real gate flaw
    before it shipped.
+
+From the real-repo pass on the second target, additional [real]:
+
+9. **Leading global flags break dispatch.** `rein --dir X inspect` →
+   `UNKNOWN_COMMAND: no such command: --dir`, and the fix ("run
+   `rein` with no arguments for usage") never names the actual
+   mistake. Agents write flag-first constantly. Either main learns to
+   skip leading flags, or the fix says "flags come after the
+   command".
+10. **Confirms #1 at scale, worse**: `tests.candidates: null` on a
+    127-project nx workspace where `nx.json` EXISTS and vitest is
+    the actual runner (root jest.config.ts is stale bait) — and
+    `monorepo: false` despite nx.json, sharpening #2: the canonical
+    marker is missing from the table.
+11. **The adoption move is undocumented.** Plan held the pre-existing
+    19KB instruction file as unmanaged (guarantee held, confirms #5),
+    but nothing — engine fix or skill step 6 — says HOW to adopt
+    (remove the old file after triage; git is the recovery). Done
+    here from product knowledge the skill should carry.
+12. **Cousin of #6, injection side**: the first breakage proof landed
+    in a file outside the gate's compile scope and the gate stayed
+    green on a "broken" tree. Step 7 should say: a green gate on your
+    breakage means the injection missed, not that the gate works —
+    confirm the broken file is in scope before concluding anything.
+13. **The verify skeleton needs an environment section.** Before any
+    check could run, the gate had to absorb node>=22 activation (the
+    shell carried v20; pnpm crashes on it — confirms the bench
+    DEBT row) and an 8G heap (the workspace typecheck OOMs node's
+    default at 51s, green at 90s with it). The skeleton starts at
+    checks; real gates start at environment, with teaching errors.
+14. **A triage rule died on evidence, correctly**: the corpus rule
+    "no features/ dirs inside feature libs" is violated by 9+ libs
+    AND contradicted by the corpus's own reference example — so the
+    Demote candidate was downgraded to Flag with file:line proof
+    instead of becoming a gate check red on the untouched tree. The
+    buckets held under a 374-line corpus (→ 90-line runbook + a
+    foreign tool's auto-managed block preserved verbatim as its own
+    override fragment, pending the ownership ruling).
+15. **Skills-dir cohabitation is real**: rein's skills now share
+    `.claude/skills/` with another tool's (including `~origin_*`
+    duplicate dirs from some earlier merge) — a shared write surface
+    inspect's config_surfaces does not list.
+16. **Held on the real repo** [real]: journal/attest/doctor end to
+    end foreign-side (GATE_UNPROVEN → proof → attest → 0 findings);
+    six evidence-backed debt rows seeded; plan priced the triaged
+    render at 7,987 of 32,768 bytes; `rein note` carried the full
+    ruling record; and the journal's first practical win — see the
+    coordination flag above.
 
 ## Noted, not yet actioned
 
