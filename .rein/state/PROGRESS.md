@@ -51,11 +51,6 @@ Nothing.
 Found in the 2026-08-31 audit, recorded here rather than bundled into
 an unrelated change:
 
-- **Debt ledger is empty.** `.rein/state/DEBT.md` has a header row
-  and no entries, while the blocked items below are exactly what it
-  exists to hold. Its doctor audits (`DEBT_ROW_INCOMPLETE`,
-  `DEBT_EXPIRED`) have therefore never fired on real content — they
-  are untested against anything but fixtures.
 - **Coverage is concentrated and partly unmeasured.** `engine` 75.2%,
   `publish` 73.2%; `registry`, `resolve`, `component`, `adapter`,
   `envelope`, `lockfile` have no direct tests and report 0.0% because
