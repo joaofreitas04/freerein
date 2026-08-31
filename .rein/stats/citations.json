@@ -2,16 +2,16 @@
   "formatVersion": "0.1.0",
   "citations": {
     "instructions-base:00-base": {
-      "count": 1,
-      "last": "2026-08-31T11:42:29Z"
+      "count": 2,
+      "last": "2026-08-31T17:43:13Z"
     },
     "state-base:30-state": {
-      "count": 1,
-      "last": "2026-08-31T11:42:59Z"
+      "count": 2,
+      "last": "2026-08-31T17:43:13Z"
     },
     "verification-gate:20-verification": {
-      "count": 1,
-      "last": "2026-08-31T11:42:59Z"
+      "count": 2,
+      "last": "2026-08-31T17:43:13Z"
     }
   }
 }
