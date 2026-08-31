@@ -42,6 +42,10 @@ commands:
             (--proposal --outcome accepted|rejected --evidence)
   journal   read the harness history back out (newest first, offloaded;
             --kind/--since/--path filter, --limit caps inline entries)
+  report    assemble a field report for an installed component from the
+            lock, journal, and citation stats (--subsystem
+            --failure-class --reproduction --disposition); written to
+            .rein/out/report/, never transmitted
   version   engine version
 
 flags:
@@ -108,6 +112,10 @@ func main() {
 	proposalID := fs.String("proposal", "", "verdict: proposal id")
 	outcome := fs.String("outcome", "", "verdict: accepted|rejected")
 	evidence := fs.String("evidence", "", "verdict: the measurement's result")
+	subsystem := fs.String("subsystem", "", "report: diagnose attribution (instructions|tools|environment|state|feedback)")
+	failureClass := fs.String("failure-class", "", "report: generalized statement of the defect")
+	reproduction := fs.String("reproduction", "", "report: minimal generalized trigger, inputs as affordances")
+	disposition := fs.String("disposition", "", "report: fix|default-change|table-entry|docs")
 	human := fs.Bool("human", false, "human-readable output")
 	fs.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 
@@ -175,6 +183,14 @@ func main() {
 			break
 		}
 		g.Attest(e, positionals[0])
+	case "report":
+		if len(positionals) == 0 {
+			e.Fail("MISSING_ARGUMENT", "report needs a component argument",
+				"e.g. `rein report instructions-base --subsystem … --failure-class … --reproduction … --disposition …`")
+			break
+		}
+		g.Report(e, positionals[0], engine.ReportFields{Subsystem: *subsystem,
+			FailureClass: *failureClass, Reproduction: *reproduction, Disposition: *disposition})
 	case "note":
 		g.Note(e, strings.Join(positionals, " "))
 	case "version":
