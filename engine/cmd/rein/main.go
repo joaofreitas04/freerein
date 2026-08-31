@@ -46,6 +46,12 @@ commands:
             lock, journal, and citation stats (--subsystem
             --failure-class --reproduction --disposition); written to
             .rein/out/report/, never transmitted
+  eval      the paired measurement instrument (spec/eval.md): "eval
+            next" assigns task + condition (deterministic,
+            counterbalanced); "eval record --task <id> --exit <code>"
+            appends a run under the installed condition (--seconds
+            --operator --note optional); bare "eval" reads pairs,
+            groups, and misreadings — the engine never runs a task
   version   engine version
 
 flags:
@@ -112,6 +118,11 @@ func main() {
 	proposalID := fs.String("proposal", "", "verdict: proposal id")
 	outcome := fs.String("outcome", "", "verdict: accepted|rejected")
 	evidence := fs.String("evidence", "", "verdict: the measurement's result")
+	task := fs.String("task", "", "eval record: the assigned task id")
+	exitCode := fs.Int("exit", -1, "eval record: the done_check's exit code")
+	seconds := fs.Int("seconds", 0, "eval record: wall-clock seconds (optional)")
+	operator := fs.String("operator", "", "eval record: operator label — different operators are different experiments")
+	noteF := fs.String("note", "", "eval record: free-text note (optional)")
 	subsystem := fs.String("subsystem", "", "report: diagnose attribution (instructions|tools|environment|state|feedback)")
 	failureClass := fs.String("failure-class", "", "report: generalized statement of the defect")
 	reproduction := fs.String("reproduction", "", "report: minimal generalized trigger, inputs as affordances")
@@ -191,6 +202,22 @@ func main() {
 		}
 		g.Report(e, positionals[0], engine.ReportFields{Subsystem: *subsystem,
 			FailureClass: *failureClass, Reproduction: *reproduction, Disposition: *disposition})
+	case "eval":
+		sub := ""
+		if len(positionals) > 0 {
+			sub = positionals[0]
+		}
+		switch sub {
+		case "":
+			g.Eval(e)
+		case "next":
+			g.EvalNext(e)
+		case "record":
+			g.EvalRecord(e, *task, *exitCode, *seconds, *operator, *noteF)
+		default:
+			e.Fail("INVALID_ARGUMENT", "unknown eval action "+sub,
+				"eval actions: `rein eval` (read), `rein eval next` (assign), `rein eval record --task <id> --exit <code>`")
+		}
 	case "note":
 		g.Note(e, strings.Join(positionals, " "))
 	case "version":

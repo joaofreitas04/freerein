@@ -35,14 +35,18 @@ survive in the code: what is next, what is unproven, what is blocked.
    six patches. The field case corpus lives at
    `engine/internal/engine/field_test.go` and only grows; the
    consumed findings' full text is in git history.
-3. **The paired eval** (`rein eval`) — designed 2026-08-31, awaiting
-   ruling (`spec/eval.md` v0.1): engine keeps score, never runs a
-   task; tasks from the repo's own work with mechanical done-checks;
-   deterministic counterbalanced assignment (the operator asks,
-   never picks); conditions read from the installed lock, not
-   asserted; no blinding, stated plainly; aggregates carry
-   misreadings; standard-vs-minimal as the default arms (§2.6).
-   Implementation waits on the ruling.
+3. **The paired eval — ruled ACCEPTED 2026-08-31, SHIPPED the same
+   day** (`spec/eval.md` v0.1): `rein eval next` (deterministic,
+   counterbalanced — the operator asks, never picks) / `eval record`
+   (condition read from the installed harness; an unapplied
+   declaration is refused; runs append-only in
+   `.rein/eval/runs.jsonl`, void-by-append honored) / `rein eval`
+   (latest run per task/operator/arm, paired, grouped never pooled,
+   misreadings in the result). What remains is not code: the owner
+   curates `.rein/eval/tasks.jsonl` from the repo's own work (rule
+   1 — id, statement, runnable done_check, source), and runs accrue
+   through real sessions under item 1. The instrument never closes
+   a proposal; verdicts may pre-name its read as their measurement.
 4. **Field-report channel — ruled ACCEPTED 2026-08-31, and mostly
    SHIPPED the same day** (`spec/field-report.md` v0.2): `rein
    report` (producer-side assembly: lock facts, journal since-dates
@@ -232,8 +236,10 @@ an unrelated change:
 
 ## Blocked / needs a human
 
-- **Ruling: the paired eval design** (`spec/eval.md` v0.1, drafted
-  2026-08-31). Accept, amend, or redirect; implementation waits.
+- **Curation: the eval task set.** `rein eval` is live but
+  `.rein/eval/tasks.jsonl` is empty — tasks are the repo's own work
+  and the owner curates them (spec/eval.md rule 1); the engine
+  refuses to invent any.
 - **Scoping: § Next item 5 (setup deepening).** Which inspect
   surfaces earn table rows without fresh field evidence (hooks?
   state files? prior-install markers — which?); the

@@ -1,4 +1,4 @@
-# Paired eval — contract v0.1 (draft, awaiting ruling)
+# Paired eval — contract v0.1 (accepted 2026-08-31)
 
 The measurement instrument the back half of the loop is missing:
 evolve verdicts and profile claims currently rest on citations plus

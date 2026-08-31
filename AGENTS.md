@@ -85,7 +85,13 @@ from the lock, shadows with journal since-dates, component-prefixed
 citation counters, judgment-kind journal evidence capped and
 announced; judgment fields as mandatory flags; written to
 .rein/out/report/, never transmitted — `off` is the only submission
-level) · `version`. The command resolves from anywhere in the arg
+level) · `eval` (paired measurement instrument, spec/eval.md: `next`
+assigns deterministically and counterbalanced, `record` appends a
+run under the condition the lock shows — an unapplied declaration is
+refused — and the read pairs latest runs per task/operator/arm,
+grouped never pooled, voided-by-append honored, misreadings in the
+result; the engine never runs a task) · `version`. The command
+resolves from anywhere in the arg
 vector — flag-first invocations dispatch.
 
 **Doctor's standing checks**: `DRIFT` / `COMPOSITION_BEHIND` /
@@ -115,7 +121,9 @@ v0.1 · inspection v0.2 · journal v0.5
 with surfaces) ·
 lockfile v0.1 · registry v0.2 · resolution v0.5 (citation markers
 in the render; whole-composition cost tiers; profiles) · eval v0.1
-(draft, awaiting ruling).
+(accepted 2026-08-31: the engine keeps score and never runs a task;
+tasks curated by the human with mechanical done-checks;
+standard-vs-minimal default arms).
 
 **Profiles** (`profile:` in harness.yaml, resolution v0.5):
 `standard` (full core) · `minimal` (instructions-minimal +
@@ -167,4 +175,6 @@ semantic recurrence over journal notes; instruction-corpus curation.
 (merge/adapters/extensions) · `registry_test` (incl. HTTP transport
 via httptest) · `publish_test` · `lifecycle_test` (journal, budget,
 addresses) · `inspect_test` (incl. measure states) · `journal_test` ·
-`attest_test` · `fixlint_test` (envelope rule 2).
+`attest_test` · `fixlint_test` (envelope rule 2) · `field_test` (the
+grow-only field case corpus — every detection defect lands red here
+before its fix) · `report_test` · `eval_test`.
