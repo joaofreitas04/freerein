@@ -73,6 +73,21 @@ func splitArgs(fs *flag.FlagSet, args []string) ([]string, error) {
 	}
 }
 
+// resolveCommand finds the command wherever it sits in the vector:
+// agents write `rein --dir x inspect` as often as `rein inspect
+// --dir x`, and both must dispatch [real 9]. Empty command with a
+// nil error is the usage path.
+func resolveCommand(fs *flag.FlagSet, args []string) (string, []string, error) {
+	positionals, err := splitArgs(fs, args)
+	if err != nil {
+		return "", nil, err
+	}
+	if len(positionals) == 0 {
+		return "", nil, nil
+	}
+	return positionals[0], positionals[1:], nil
+}
+
 func main() {
 	fs := flag.NewFlagSet("rein", flag.ContinueOnError)
 	dir := fs.String("dir", ".", "target repo")
@@ -96,13 +111,12 @@ func main() {
 	human := fs.Bool("human", false, "human-readable output")
 	fs.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 
-	if len(os.Args) < 2 {
-		fs.Usage()
+	cmd, positionals, err := resolveCommand(fs, os.Args[1:])
+	if err != nil {
 		os.Exit(2)
 	}
-	cmd := os.Args[1]
-	positionals, err := splitArgs(fs, os.Args[2:])
-	if err != nil {
+	if cmd == "" {
+		fs.Usage()
 		os.Exit(2)
 	}
 

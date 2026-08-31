@@ -54,3 +54,52 @@ func TestSplitArgsRejectsUnknownFlag(t *testing.T) {
 		t.Fatal("an unknown flag must error (exit 2 path)")
 	}
 }
+
+// [real 9]: `rein --dir X inspect` dispatched "--dir" as the command
+// (UNKNOWN_COMMAND, with a fix that never named the mistake). Agents
+// write flag-first constantly; the command is the first positional
+// wherever it sits in the vector.
+func TestResolveCommandAcceptsLeadingFlags(t *testing.T) {
+	cases := []struct {
+		args        []string
+		cmd         string
+		positionals []string
+		registry    string
+	}{
+		{[]string{"--registry", "r", "add", "comp"}, "add", []string{"comp"}, "r"},
+		{[]string{"add", "comp", "--registry", "r"}, "add", []string{"comp"}, "r"},
+		{[]string{"--yes", "apply"}, "apply", nil, ""},
+		{[]string{"inspect"}, "inspect", nil, ""},
+	}
+	for _, c := range cases {
+		fs, registry, _ := newFS()
+		cmd, rest, err := resolveCommand(fs, c.args)
+		if err != nil {
+			t.Fatalf("%v: %v", c.args, err)
+		}
+		if cmd != c.cmd {
+			t.Fatalf("%v: want command %q, got %q", c.args, c.cmd, cmd)
+		}
+		if len(rest) != len(c.positionals) {
+			t.Fatalf("%v: want positionals %v, got %v", c.args, c.positionals, rest)
+		}
+		for i := range rest {
+			if rest[i] != c.positionals[i] {
+				t.Fatalf("%v: want positionals %v, got %v", c.args, c.positionals, rest)
+			}
+		}
+		if *registry != c.registry {
+			t.Fatalf("%v: flag dropped (registry=%q)", c.args, *registry)
+		}
+	}
+}
+
+// Flags alone name no command — that is the usage path, distinct
+// from both a parse error and UNKNOWN_COMMAND.
+func TestResolveCommandEmptyIsUsage(t *testing.T) {
+	fs, _, _ := newFS()
+	cmd, rest, err := resolveCommand(fs, []string{"--yes"})
+	if err != nil || cmd != "" || len(rest) != 0 {
+		t.Fatalf("flags without a command must resolve empty for the usage path, got cmd=%q rest=%v err=%v", cmd, rest, err)
+	}
+}
