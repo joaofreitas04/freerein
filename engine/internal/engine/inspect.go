@@ -102,7 +102,7 @@ var langManifests = []struct{ file, lang string }{
 	{"mix.exs", "elixir"},
 }
 
-var monorepoMarkers = []string{"go.work", "pnpm-workspace.yaml", "lerna.json", "turbo.json"}
+var monorepoMarkers = []string{"go.work", "pnpm-workspace.yaml", "lerna.json", "turbo.json", "nx.json"}
 
 var testConfigs = []string{
 	"pytest.ini", "tox.ini", "conftest.py",
