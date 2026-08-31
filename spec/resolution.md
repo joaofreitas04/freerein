@@ -1,4 +1,4 @@
-# Resolution — contract v0.3 (draft)
+# Resolution — contract v0.4 (draft)
 
 How `harness.yaml` (intent) becomes a resolved file set.
 
@@ -52,3 +52,15 @@ the list it is declared under.
    while the render itself refuses past 100%. What a fragment costs
    is not its length but its necessity; the number exists so that
    growth is a decision someone made, never an accident nobody saw.
+   The same pricing covers the whole composition (lifecycle §1.4):
+   the plan result's `costs` object tiers every installed artifact by
+   when its price is paid — `always` (the instruction file, every
+   turn), `per_session` (state seeds at their on-disk size, since the
+   agent-owned file a session reads is the real cost, not the
+   template), `conditional` (each skill's two loads: the description
+   listed every session and the body paid on invocation) — names what
+   it deliberately does not price (scripts are executed, never
+   loaded; the vendor tree never enters context; no adapter exposes
+   hooks yet), and carries its misreading: bytes price the load, not
+   the worth. Reporting only — no thresholds beyond the instruction
+   file's, because a cutoff nobody measured is an unearned number.

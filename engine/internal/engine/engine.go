@@ -319,6 +319,7 @@ type Plan struct {
 	Removes   []PlanItem `json:"removes"`
 	Unmanaged []PlanItem `json:"unmanaged"`
 	Budget    *Budget    `json:"budget,omitempty"`
+	Costs     *Costs     `json:"costs,omitempty"`
 }
 
 // Budget prices the rendered instruction file against the adapter's
@@ -437,6 +438,7 @@ func (g *Engine) Plan(e *envelope.Envelope) {
 				"instruction content is paid on every turn: drop fragments an agent could derive from the tree, and move rules that only apply sometimes behind a condition (a skill, a hook) instead of stating them always")
 		}
 	}
+	p.Costs = g.computeCosts(r)
 	compositionAdvisories(e, r.components)
 	e.Result = p
 	if p.empty() {

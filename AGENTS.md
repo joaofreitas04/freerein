@@ -55,8 +55,10 @@ An inventory, not a history — git holds the chronology, and
 add/info/upgrade): `init` · `inspect` (mechanical discovery + the
 per-file `measure`; never executes project code; works pre-init;
 report offloaded) · `plan` (three-way merge preview over the
-committed `.rein/base/` store; prices the composition — budget
-object, `NEAR_CONTEXT_BUDGET` at 80% of the adapter limit) · `apply`
+committed `.rein/base/` store; prices the whole composition — budget
+object with `NEAR_CONTEXT_BUDGET` at 80% of the adapter limit, plus
+`costs` tiered by when the price is paid: always / per-session /
+conditional, unpriced surfaces named, misreading attached) · `apply`
 (two-phase; clean merges land, conflicts leave the file alone with a
 markered artifact under `.rein/out/merge/`; never clobbers unmanaged
 files — `EXISTS_UNMANAGED`, adoption via overrides) · `dump` ·
@@ -91,8 +93,8 @@ agent-owned, never drift-tracked; removal leaves them and says so
 (ids, markers, store, misreadings) · component-manifest v0.2
 (`addresses:`) · host-adapter v0.1 · inspection v0.2 · journal v0.4
 (append-only; `note` + `attest` kinds; read path with surfaces) ·
-lockfile v0.1 · registry v0.2 · resolution v0.3 (citation markers
-in the render).
+lockfile v0.1 · registry v0.2 · resolution v0.4 (citation markers
+in the render; whole-composition cost tiers).
 
 **Content** (embedded core): instructions-base 0.3 (session
 discipline stays ambient — deliberately no operate skill; retrieved

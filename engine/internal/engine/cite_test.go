@@ -112,3 +112,65 @@ func TestCitingChangesNoRenderedBytes(t *testing.T) {
 		t.Fatal("citing must never touch the instruction file")
 	}
 }
+
+// spec/resolution.md rule 6: plan prices the whole composition, in
+// tiers by when the price is paid, reporting only — and the number
+// ships with its misreading.
+func TestPlanPricesTheWholeComposition(t *testing.T) {
+	g, repo := appliedRepo(t)
+	e := envelope.New("plan")
+	g.Plan(e)
+	if !e.OK {
+		t.Fatalf("plan failed: %+v", e.Diagnostics)
+	}
+	b, _ := json.Marshal(e.Result)
+	var p struct {
+		Costs struct {
+			Always      map[string]int `json:"always"`
+			PerSession  map[string]int `json:"per_session"`
+			Conditional []struct {
+				Skill            string `json:"skill"`
+				DescriptionBytes int    `json:"description_bytes"`
+				BodyBytes        int    `json:"body_bytes"`
+			} `json:"conditional"`
+			NotPriced  []string `json:"not_priced"`
+			Misreading string   `json:"misreading"`
+		} `json:"costs"`
+	}
+	if err := json.Unmarshal(b, &p); err != nil {
+		t.Fatal(err)
+	}
+	c := p.Costs
+	if c.Always["CLAUDE.md"] == 0 {
+		t.Fatalf("the instruction file is the always tier, got %+v", c.Always)
+	}
+	if c.PerSession[".rein/state/PROGRESS.md"] == 0 || c.PerSession[".rein/state/DEBT.md"] == 0 {
+		t.Fatalf("seeds are the per-session tier, got %+v", c.PerSession)
+	}
+	if len(c.Conditional) == 0 {
+		t.Fatal("skills are the conditional tier")
+	}
+	for _, s := range c.Conditional {
+		if s.DescriptionBytes == 0 || s.BodyBytes == 0 {
+			t.Fatalf("a skill has two loads (listing + invocation), got %+v", s)
+		}
+	}
+	if len(c.NotPriced) == 0 || c.Misreading == "" {
+		t.Fatal("unpriced surfaces and the misreading must be named (lifecycle §1.5)")
+	}
+
+	// seeds are priced as the agent-owned file a session actually
+	// reads: growth after install must show up
+	before := c.PerSession[".rein/state/PROGRESS.md"]
+	f, _ := os.OpenFile(filepath.Join(repo, ".rein/state/PROGRESS.md"), os.O_APPEND|os.O_WRONLY, 0o644)
+	f.WriteString(strings.Repeat("session history accretes\n", 40))
+	f.Close()
+	e = envelope.New("plan")
+	g.Plan(e)
+	b, _ = json.Marshal(e.Result)
+	json.Unmarshal(b, &p)
+	if p.Costs.PerSession[".rein/state/PROGRESS.md"] <= before {
+		t.Fatalf("a grown seed must price at its on-disk size, got %d <= %d",
+			p.Costs.PerSession[".rein/state/PROGRESS.md"], before)
+	}
+}

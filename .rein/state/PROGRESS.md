@@ -22,8 +22,18 @@ survive in the code: what is next, what is unproven, what is blocked.
 evolve, and evolve's mechanics do not land until its substrates
 exist:
 
-1. Cost surfaces beyond the instruction file — not started; plan
-   prices the instruction composition only.
+1. Minimal profile as a shipped control mode — the last named
+   observe-adjacent item; after it, evolve's mechanics (paired
+   measurement, held-out acceptance) are unblocked for design.
+
+Cost surfaces shipped 2026-08-31 (resolution v0.4): plan's `costs`
+object tiers every installed artifact by when its price is paid —
+always (instruction file), per-session (seeds at on-disk size: this
+repo's PROGRESS.md prices at ~4.9KB, more than twice the instruction
+file, which is exactly the kind of fact the tier exists to surface),
+conditional (each skill's description + body loads) — with unpriced
+surfaces named and the misreading attached. Reporting only, no new
+thresholds: a cutoff nobody measured is an unearned number.
 
 Fragment citation telemetry shipped 2026-08-31 as designed and
 ruled: spec/citation.md v0.1, resolution v0.3 markers, `rein cite`,
