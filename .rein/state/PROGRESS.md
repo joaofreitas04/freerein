@@ -95,40 +95,60 @@ shipped control mode; release automation.
 
 ## In flight
 
-Field test 2: with the owner (2026-08-31). The target is a private
-multi-app Angular/Nx workspace of the owner's — its name and paths
-stay out of this public repo (the owner knows which; the bench path
-below locates it locally). The owner runs the real install and
-interview
-themselves — their explicit ruling, and the setup interview is
-designed around rulings only they can make. rein 0.2.0 (released
-binary, checksum-verified) is on their PATH (~/.local/bin/rein).
+Nothing.
 
-A parallel session, unaware of that ruling, completed a full
-autonomous pass on a scratch clone (bench at ~/.cache/ft2/<target>,
-1.6GB, kept as evidence; the real repo verified untouched). Its
-interview rulings are VOID — defaults for demonstration, decided by
-nobody — but its engine-side results are objective and are merged
-into the findings below, marked [bench]. The bench's DEBT.md holds
-target-side facts for the owner's real install (format drift: 325
-files fail nx format:check; system pnpm crashes under volta node 20;
-fresh clones need the codegen script before anything compiles).
+## Field test 2 — CONCLUDED (2026-08-31, owner-run)
 
-UPDATE, same day: the owner then explicitly directed this session to
-run the full setup autonomously on a SECOND target — a larger private
-workspace of theirs (real repo, in place; names stay out of this
-public repo). That live instruction supersedes the earlier
-interview-is-theirs ruling for that target only; every triage and
-ownership ruling made there is still a DEFAULT, marked pending the
-owner in that repo's PROGRESS, journal note, and local branch
-`field-test-2/rein-setup` (committed locally, NOT pushed, per the
-owner's explicit no-push rule; their original branch restored).
-Findings from that pass are merged below, marked [real]. One
-coordination flag FOR THE OWNER: that repo's journal shows an apply
-at 14:04:12Z this session did not issue — consistent with the
-owner's own install (rein on their PATH) running concurrently;
-if so, this session's 14:13 apply landed on top of it. The journal
-made the collision legible; the owner should reconcile.
+The owner ran the full setup on the field-test-1 repo (a private
+React/Nx monorepo, ~370-line pre-existing instruction file, a
+competing agent kit installed, real debt). Read-only analysis of the
+artifacts; everything below is generalized per the privacy rule.
+
+**The product held.** Converged end-state: doctor 0 findings, plan
+empty, 9 managed files. Triage: ~210 of ~370 lines dropped (content
+duplicating a routed docs/ tree, aliases derivable from tsconfig,
+references to a deleted app), 5 rules demoted into the gate, ~97
+kept — render at 23% of budget. The previously unmanaged instruction
+file was fully adopted into the render. The competing kit's files
+were staged for deletion — an ownership ruling executed, not just
+recorded. The debt ledger finally held a real brownfield: 9 rows,
+all evidence-backed (red lint/format repo-wide, empty test targets,
+orphan specs never run, a typecheck that OOMs default heap, no CI,
+grandfathered structure). Journal shows the designed loops firing in
+the field: gate applied → attested → gate changed → re-attested
+(GATE_PROOF_STALE recovery, second field catch); a wrong proposed
+check overruled by the human on tree evidence (13/15 libs proved the
+"violation" was the convention) with the amendment journaled; a
+negative ruling recorded ("human declined all forbidden-surface
+candidates — do not re-add").
+
+**Patterns that emerged in the field, candidates to fold back into
+rein-setup (9-12 continue the numbering above):**
+
+9.  **The ratchet-with-baseline.** The setup grandfathered 75
+    existing placement violations into a committed baseline file the
+    gate diffs against: old debt ledgered, new violations refused.
+    The skill's verify skeleton doesn't teach this shape; it should —
+    it is the only honest way to gate a rule a brownfield already
+    breaks 75 times.
+10. **Evidence comments inside the gate.** The authored verify
+    carries its own justification ("proven on this tree: OOM at 47s
+    without this") and orders checks cheap-first before a 54s
+    typecheck. Both are skill-worthy guidance.
+11. **Amendment-after-apply ordering.** The wrong check shipped in
+    the first apply and was corrected in a second after the human
+    saw it. The interview's one-topic-at-a-time review happened, but
+    evidence-checking a proposed rule against the tree (does the
+    tree already violate it pervasively?) belongs in step 2, before
+    anything applies.
+12. **Host-file redirect for the non-adapter file.** The pre-existing
+    AGENTS.md became a hand-authored 8-line pointer at the rendered
+    CLAUDE.md. Reasonable — but it is unmanaged and undocumented;
+    whether the adapter should own a redirect stub for the other
+    host's file is a real design question.
+
+Day-one citations are all zero there, as expected; real sessions
+accrue them. The staged kit deletion awaits the owner's commit.
 
 ## Field test 2 — preliminary findings (engine-side, from the dry run)
 
