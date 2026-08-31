@@ -1,0 +1,17 @@
+name: procedure-evolve
+kind: core
+version: 0.1.0
+subsystem: feedback
+rung: conditional
+rent:
+  class: amplifier
+provides:
+  - skills/rein-evolve/SKILL.md
+requires: []
+conflicts: []
+description: >
+  The harness improvement loop: nominate one candidate from the
+  observe substrates, propose through rein with a pre-named
+  measurement, change, measure, verdict on evidence. Use when the
+  harness should get better or smaller without a failure driving it.
+  Do NOT use to repair an observed failure — that is rein-diagnose.

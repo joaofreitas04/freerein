@@ -75,14 +75,20 @@ and append-only) · `cite` (fragment citation telemetry: render
 markers carry `component:filename` ids; counters in
 `.rein/stats/citations.json`, never the journal; no-arg read ranks
 decay candidates with the misreading attached — advisory, human-
-ablated, never auto-removed) · `version`.
+ablated, never auto-removed) · `propose`/`verdict` (evolve mechanics,
+journal v0.5: six mandatory fields with the measurement named before
+the change, one open proposal at a time as a hard refusal, verdicts
+immutable and evidence-only with the pre-named measurement copied
+in — proposer-never-accepts stays procedure discipline, stated, not
+faked) · `version`.
 
 **Doctor's standing checks**: `DRIFT` / `COMPOSITION_BEHIND` /
 `VENDOR_TAMPERED` / `COMPENSATION_RECHECK` (every resolved layer) /
 `ADDRESSES_OVERLAP` / `GATE_STUB` / `GATE_UNPROVEN` /
 `GATE_PROOF_STALE` (attested gate hash vs installed; silent when the
 stub finding owns the surface) / `DEBT_ROW_INCOMPLETE` /
-`DEBT_EXPIRED`. Failures carry a `fix`; on error/warning that is
+`DEBT_EXPIRED` / `PROPOSAL_OPEN` (open evolve proposals stay
+visible). Failures carry a `fix`; on error/warning that is
 mechanically enforced by an AST-walking test.
 
 **Seed files** (`PROGRESS.md`, `DEBT.md`): install-if-absent,
@@ -91,8 +97,9 @@ agent-owned, never drift-tracked; removal leaves them and says so
 
 **Contracts** (`spec/`): cli-envelope v0.3 · citation v0.1
 (ids, markers, store, misreadings) · component-manifest v0.2
-(`addresses:`) · host-adapter v0.1 · inspection v0.2 · journal v0.4
-(append-only; `note` + `attest` kinds; read path with surfaces) ·
+(`addresses:`) · host-adapter v0.1 · inspection v0.2 · journal v0.5
+(append-only; `note`/`attest`/`proposal`/`verdict` kinds; read path
+with surfaces) ·
 lockfile v0.1 · registry v0.2 · resolution v0.5 (citation markers
 in the render; whole-composition cost tiers; profiles).
 
@@ -113,7 +120,10 @@ ruling; evidence-backed gate proposals; breakage-proof + attest at
 step 7) · procedure-diagnose 0.4 (journal recurrence before any
 artifact; never stack on an addressed surface; rulings via `rein
 note`; re-prove a touched gate) · procedure-decide 0.1 (immutable
-decision records, refuse-before-generate). Adapters: claude-code,
+decision records, refuse-before-generate) · procedure-evolve 0.1
+(one candidate from the observe evidence, propose before touching,
+measure by the pre-named check, verdict on evidence; rejected
+changes reverted, rejected verdicts kept). Adapters: claude-code,
 codex (degradations declared, dialect unverified — see DEBT.md).
 
 **Infrastructure**: this repo is self-hosted (CLAUDE.md and
@@ -133,7 +143,7 @@ running gate candidates; breakage-injection gate proof (`rein
 attest` records it, doctor audits proof currency without executing);
 semantic recurrence over journal notes; instruction-corpus curation.
 
-**Tests**: `cite_test` · `profile_test` · `engine_test` (walking skeleton) · `milestones_test`
+**Tests**: `cite_test` · `profile_test` · `propose_test` · `engine_test` (walking skeleton) · `milestones_test`
 (merge/adapters/extensions) · `registry_test` (incl. HTTP transport
 via httptest) · `publish_test` · `lifecycle_test` (journal, budget,
 addresses) · `inspect_test` (incl. measure states) · `journal_test` ·

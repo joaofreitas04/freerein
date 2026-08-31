@@ -165,6 +165,14 @@ func (g *Engine) Doctor(e *envelope.Envelope) {
 	g.gateProofChecks(e, gateIsStub)
 	// 7. the debt ledger's own discipline (state-base seed schema)
 	g.debtChecks(e, r.adapter.StateDir)
+	// 8. open evolve proposals stay visible (lifecycle §2.3) — info,
+	// not warning: an open proposal is normal mid-work, invisible is
+	// the failure mode.
+	for _, p := range g.openProposals() {
+		e.Diag(envelope.Info, "PROPOSAL_OPEN",
+			p.ID+" ("+p.Surface+") awaits its verdict",
+			"run the pre-named measurement ("+p.Measurement+") and `rein verdict --proposal "+p.ID+"`")
+	}
 	e.Result = map[string]any{"files_checked": checks, "findings": len(e.Diagnostics)}
 }
 

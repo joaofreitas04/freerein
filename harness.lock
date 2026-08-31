@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "resolved_at": "2026-08-31T11:42:29Z",
+  "resolved_at": "2026-08-31T12:21:27Z",
   "engine": "rein 0.1.0-dev",
   "adapter": {
     "name": "claude-code",
@@ -13,7 +13,7 @@
     },
     {
       "id": "core",
-      "source": "embedded@0.1.0-dev"
+      "source": "embedded@0.1.0-dev/standard"
     }
   ],
   "files": {
@@ -33,6 +33,15 @@
       "shadowed": null,
       "refs": [
         "procedure-diagnose@0.4.0"
+      ]
+    },
+    ".claude/skills/rein-evolve/SKILL.md": {
+      "layer": "core",
+      "component": "procedure-evolve@0.1.0",
+      "hash": "sha256:434b28e8793db1cd193376afe932e34cafb7b4a3fbe0bfc1c34b53e69e5c5480",
+      "shadowed": null,
+      "refs": [
+        "procedure-evolve@0.1.0"
       ]
     },
     ".claude/skills/rein-setup/SKILL.md": {

@@ -49,7 +49,8 @@ type Config struct {
 // the project's own configuration constant.
 var profiles = map[string][]string{
 	"standard": {"instructions-base", "verification-gate", "state-base",
-		"procedure-setup", "procedure-diagnose", "procedure-decide"},
+		"procedure-setup", "procedure-diagnose", "procedure-decide",
+		"procedure-evolve"},
 	"minimal": {"instructions-minimal", "verification-gate"},
 }
 

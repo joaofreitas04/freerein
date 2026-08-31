@@ -5,3 +5,4 @@
 {"applied":[".claude/skills/rein-diagnose/SKILL.md",".claude/skills/rein-setup/SKILL.md"],"at":"2026-08-31T11:33:38Z","conflicts":[],"engine":"rein 0.1.0-dev","kind":"apply","layers":["overrides","core"]}
 {"at":"2026-08-31T11:33:45Z","engine":"rein 0.1.0-dev","gate":"scripts/verify","gate_hash":"sha256:ea325e1f777e89edd20a45c3545426bd25f6fe14a1cc741b014c40d27d9f0153","kind":"attest","subject":"gate-can-fail"}
 {"applied":["CLAUDE.md"],"at":"2026-08-31T11:42:29Z","conflicts":[],"engine":"rein 0.1.0-dev","kind":"apply","layers":["overrides","core"]}
+{"applied":[".claude/skills/rein-evolve/SKILL.md"],"at":"2026-08-31T12:21:27Z","conflicts":[],"engine":"rein 0.1.0-dev","kind":"apply","layers":["overrides","core"]}

@@ -35,6 +35,11 @@ commands:
   attest    record a proof a procedure performed (subject: gate-can-fail)
   cite      record that a fragment shaped an action (no argument: read
             the counts back, lowest first, with decay candidates)
+  propose   open an evolve proposal — all six fields required
+            (--surface --change --prediction --measurement --baseline
+            --nominated-by); one open proposal at a time
+  verdict   close a proposal on its measurement's result
+            (--proposal --outcome accepted|rejected --evidence)
   journal   read the harness history back out (newest first, offloaded;
             --kind/--since/--path filter, --limit caps inline entries)
   version   engine version
@@ -61,6 +66,15 @@ func main() {
 	since := fs.String("since", "", "journal: RFC3339 or YYYY-MM-DD lower bound")
 	pathF := fs.String("path", "", "journal: only entries touching this path")
 	limit := fs.Int("limit", 20, "journal: inline entry cap (0 = counts only)")
+	surface := fs.String("surface", "", "propose: artifact/component being changed")
+	change := fs.String("change", "", "propose: one line, what changes")
+	prediction := fs.String("prediction", "", "propose: falsifiable — next time X, Y instead of Z")
+	measurement := fs.String("measurement", "", "propose: what decides, named before the change")
+	baseline := fs.String("baseline", "", "propose: condition compared against")
+	nominatedBy := fs.String("nominated-by", "", "propose: cite-decay|compensation-recheck|overlap|recurrence|human")
+	proposalID := fs.String("proposal", "", "verdict: proposal id")
+	outcome := fs.String("outcome", "", "verdict: accepted|rejected")
+	evidence := fs.String("evidence", "", "verdict: the measurement's result")
 	human := fs.Bool("human", false, "human-readable output")
 	fs.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 
@@ -122,6 +136,12 @@ func main() {
 		g.Inspect(e)
 	case "journal":
 		g.Journal(e, engine.JournalOpts{Kind: *kind, Since: *since, Path: *pathF, Limit: *limit})
+	case "propose":
+		g.Propose(e, engine.ProposalFields{Surface: *surface, Change: *change,
+			Prediction: *prediction, Measurement: *measurement,
+			Baseline: *baseline, NominatedBy: *nominatedBy})
+	case "verdict":
+		g.Verdict(e, *proposalID, *outcome, *evidence)
 	case "cite":
 		id := ""
 		if len(positionals) > 0 {

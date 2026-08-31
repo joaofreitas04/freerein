@@ -1,4 +1,4 @@
-# Journal — contract v0.4 (draft)
+# Journal — contract v0.5 (draft)
 
 `.rein/journal.jsonl` is the append-only history of the installed
 harness: one JSON object per line, engine-written, committed to the
@@ -99,4 +99,37 @@ produced it; consumers may branch on it, and additions bump the minor.
    findings for one failure are the thing doctor exists to warn
    about. This is the gate-can-fail standing check of
    docs/lifecycle.md §4, split on the judgment/computation line.
+
+## Evolution: proposals and verdicts
+
+10. **A harness change is proposed before it is made.** The
+    `proposal` kind carries six mandatory fields — `surface`,
+    `change`, `prediction` (falsifiable: next time X, Y instead of
+    Z), `measurement` (what will decide, named BEFORE the change
+    exists: gate re-run, paired-vs-minimal, held-out case),
+    `baseline`, `nominated_by` (a registered vocabulary: cite-decay,
+    compensation-recheck, overlap, recurrence, human — evolve's
+    inputs are observe's outputs) — and `rein propose` refuses on
+    any hole, listing all of them. Ids are short content hashes
+    salted with the proposal sequence, so re-proposing an identical
+    change after a rejection mints a new id rather than resurrecting
+    the old verdict.
+11. **One open proposal at a time** (lifecycle §2.3). `rein propose`
+    refuses while any proposal lacks a verdict, naming it; there is
+    no force flag. `doctor` keeps open proposals visible
+    (`PROPOSAL_OPEN`, info — open is normal mid-work, invisible is
+    the failure mode).
+12. **A verdict is evidence, never the argument** (lifecycle §2.1).
+    The `verdict` kind carries the proposal id, `outcome`
+    (accepted | rejected — anything murkier goes back to measurement
+    or to the human), and non-empty `evidence`: the measurement's
+    result. The engine copies the proposal's pre-named `measurement`
+    into the verdict, so what decided and what was promised to
+    decide cannot disagree. Verdicts are immutable (`ALREADY_DECIDED`
+    — a wrong verdict is corrected by a new proposal), and rejected
+    verdicts are kept forever: they are what stops the same change
+    being proposed again next month. **Stated limit:** the engine
+    enforces the shape of acceptance, not the identity of the
+    accepter — that the proposer never accepts is procedure
+    discipline (`rein-evolve`), named here rather than faked.
 
