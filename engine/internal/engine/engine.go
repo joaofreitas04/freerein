@@ -497,6 +497,13 @@ func (g *Engine) Plan(e *envelope.Envelope) {
 				"instruction content is paid on every turn: drop fragments an agent could derive from the tree, and move rules that only apply sometimes behind a condition (a skill, a hook) instead of stating them always")
 		}
 	}
+	// the adoption conversation belongs at review, before anything
+	// applies — the same warning apply gives, in prospective tense
+	for _, item := range p.Unmanaged {
+		e.Diag(envelope.Warning, "EXISTS_UNMANAGED",
+			item.Path+" already exists and is not managed by rein; apply will leave it alone",
+			"to keep your version: move it to "+OverridesDir+"/"+item.Path+" (it becomes the winning layer); to take rein's version: delete the file — then apply")
+	}
 	p.Costs = g.computeCosts(r)
 	compositionAdvisories(e, r.components)
 	e.Result = p

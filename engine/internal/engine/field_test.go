@@ -180,6 +180,24 @@ func TestFieldSkillsDirIsConfigSurface(t *testing.T) {
 	}
 }
 
+// [bench 5]: rein-setup step 6 says surface the unmanaged collision
+// at plan time; the engine warned only at apply, with plan carrying
+// unmanaged[] silently in its result. Aligned toward plan — the
+// adoption conversation belongs at review, before anything applies —
+// while apply keeps its own warning (plan is optional on the way in).
+func TestFieldPlanWarnsUnmanaged(t *testing.T) {
+	g, repo := newRepo(t, "claude-code")
+	seedFile(t, repo, "CLAUDE.md", "# pre-existing, not rein's\n")
+	e := envelope.New("plan")
+	g.Plan(e)
+	if !e.OK {
+		t.Fatalf("plan failed: %+v", e.Diagnostics)
+	}
+	if !diagCodes(e)["EXISTS_UNMANAGED"] {
+		t.Fatalf("plan must warn about the unmanaged collision [bench 5], got %+v", e.Diagnostics)
+	}
+}
+
 // [bench 1]: scripts named test:* are manifest-derived run commands
 // the same way scripts.test is; only exact "test" was in the table.
 func TestFieldScriptVariantCandidates(t *testing.T) {
