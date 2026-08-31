@@ -128,6 +128,7 @@ var lintFormatConfigs = []string{
 
 var rootInstructionFiles = []string{
 	"CLAUDE.md", "CLAUDE.local.md", "AGENTS.md", "AGENT.md", "GEMINI.md",
+	"CONTEXT.md",
 	".cursorrules", ".windsurfrules", ".clinerules",
 	".github/copilot-instructions.md",
 }

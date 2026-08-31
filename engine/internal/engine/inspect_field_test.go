@@ -142,6 +142,25 @@ func TestFieldAngularPerProjectCandidates(t *testing.T) {
 	}
 }
 
+// [bench 4]: the corpus walk found only CLAUDE.md and missed a
+// root-level CONTEXT.md — an instruction-ish file a triage should at
+// least see. The table stays curated; CONTEXT.md is common enough to
+// earn its row. (Product-named notes files cannot generalize into a
+// static table and stay a procedure's judgment.)
+func TestFieldContextMdInCorpus(t *testing.T) {
+	repo := t.TempDir()
+	seedFile(t, repo, "CLAUDE.md", "# rules\n")
+	seedFile(t, repo, "CONTEXT.md", "# how this repo works\n")
+	r := inspectReport(t, repo)
+	corpus := ""
+	for _, c := range r.Instruction {
+		corpus += c.Path + ";"
+	}
+	if !strings.Contains(corpus, "CONTEXT.md") {
+		t.Fatalf("root CONTEXT.md must land in the instruction corpus [bench 4], got %v", r.Instruction)
+	}
+}
+
 // [bench 1]: scripts named test:* are manifest-derived run commands
 // the same way scripts.test is; only exact "test" was in the table.
 func TestFieldScriptVariantCandidates(t *testing.T) {
