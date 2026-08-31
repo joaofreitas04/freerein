@@ -244,6 +244,11 @@ From the real-repo pass on the second target, additional [real]:
 
 ## Noted, not yet actioned
 
+- A pre-rewrite backup mirror sits at
+  ~/Work/.freerein-backup-prescrub.git (local-only by design; it
+  contains the scrubbed names). Owner deletes it once confident in
+  the rewritten history.
+
 Found in the 2026-08-31 audit, recorded here rather than bundled into
 an unrelated change:
 
@@ -281,17 +286,6 @@ an unrelated change:
 
 ## Blocked / needs a human
 
-- **GitHub support purge (privacy, 2026-08-31).** The full history
-  rewrite removed a private repo name from 11 pre-tag commits and
-  today's leak from the tip; force-pushed, tags re-pointed, releases
-  intact. But force-pushed-away objects stay fetchable by raw SHA on
-  GitHub until garbage collection — completing the removal needs a
-  support request (https://support.github.com/contact, "remove
-  cached/unreachable objects after a sensitive-data history
-  rewrite"), which only the account owner can file. A local backup
-  mirror with the pre-rewrite history sits at
-  ~/Work/.freerein-backup-prescrub.git (deliberately local-only;
-  delete once confident).
 
 - **Codex skill frontmatter dialect.** Still a declared degradation
   in `content/adapters/codex.yaml` (`user_invoked_flag: ""`,
