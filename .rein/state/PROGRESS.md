@@ -40,10 +40,14 @@ survive in the code: what is next, what is unproven, what is blocked.
    [owner 11], verify skeleton: environment section first
    [real 13], ratchet-with-baseline [owner 9], evidence comments
    and cheap-first ordering [owner 10]).
-3. **The paired eval** (`rein eval`): with/without differential over
-   a task set. The minimal profile is the shipped control arm
-   waiting for its experiment, and evolve verdicts need a
-   measurement stronger than citations-plus-journal can supply.
+3. **The paired eval** (`rein eval`) — designed 2026-08-31, awaiting
+   ruling (`spec/eval.md` v0.1): engine keeps score, never runs a
+   task; tasks from the repo's own work with mechanical done-checks;
+   deterministic counterbalanced assignment (the operator asks,
+   never picks); conditions read from the installed lock, not
+   asserted; no blinding, stated plainly; aggregates carry
+   misreadings; standard-vs-minimal as the default arms (§2.6).
+   Implementation waits on the ruling.
 4. **Field-report channel — ruled ACCEPTED by the owner 2026-08-31**
    (`spec/field-report.md` v0.2): local-vs-shipped attribution read
    from the lock, privacy-by-construction reports (component-scoped
