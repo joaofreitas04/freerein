@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "resolved_at": "2026-08-31T10:22:43Z",
+  "resolved_at": "2026-08-31T11:11:14Z",
   "engine": "rein 0.1.0-dev",
   "adapter": {
     "name": "claude-code",
@@ -28,11 +28,11 @@
     },
     ".claude/skills/rein-diagnose/SKILL.md": {
       "layer": "core",
-      "component": "procedure-diagnose@0.2.0",
-      "hash": "sha256:a9af6a030e0f96c2177139af7facc870918a397ea4fb46e32610836626876b76",
+      "component": "procedure-diagnose@0.3.0",
+      "hash": "sha256:e79c47caabdb27a034593983b18a6cecff2e57160c30801f389517e0a1ad51b7",
       "shadowed": null,
       "refs": [
-        "procedure-diagnose@0.2.0"
+        "procedure-diagnose@0.3.0"
       ]
     },
     ".claude/skills/rein-setup/SKILL.md": {

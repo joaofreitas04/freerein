@@ -146,3 +146,20 @@ external tools, no execution — reading only. Known conflation to
 rule on: RESOLVED same day — the spec gained an eighth state,
 `error`, and both read-failure sites classify into it; an
 unrecognized file and an unreadable file are different facts.
+Journal read path DONE (2026-08-31d): **`rein journal`** —
+spec/journal.md v0.3 Reading section — filters (`--kind`/`--since`/
+`--path`/`--limit`, 0 legal for counts-only), newest-first by file
+position (timestamps are content; hand-appended repair entries may
+lack or scramble `at`), entries decoded as raw maps so unknown kinds
+survive verbatim, a **surfaces table** counting applied vs conflicted
+separately per path (fought-over surfaces sort first — the countable
+half of recurrence; failure identity stays diagnose's judgment),
+always-offloaded to `.rein/out/journal.json`, `JOURNAL_LINE_UNREADABLE`
+(warning; fix says append, never edit) and `JOURNAL_ABSENT` (info)
+split as different facts. **cli-envelope v0.3**: rule 2 rescoped —
+fix mandatory on error/warning (enforced by an AST-walking test that
+was run red first against a real violation), optional-and-omitted on
+announce-only infos; nine empty-fix sites resolved (three got real
+fixes, one an *error*). rein-diagnose 0.3: drives `rein journal` for
+recurrence and records rulings via `rein note` — the loop closes both
+directions. Covered by `journal_test.go`, `fixlint_test.go`.

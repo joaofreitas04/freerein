@@ -1,4 +1,4 @@
-# Journal — contract v0.2 (draft)
+# Journal — contract v0.3 (draft)
 
 `.rein/journal.jsonl` is the append-only history of the installed
 harness: one JSON object per line, engine-written, committed to the
@@ -38,3 +38,44 @@ with, and no way to tell a maturing harness from a churning one.
    attributed and patched twice before") and as trajectory (a harness
    whose rule-count growth is slowing is settling; one that gains
    artifacts every week is still compensating for something).
+
+## Reading
+
+`rein journal [--kind K] [--since D] [--path P] [--limit N]` reads the
+history back out, because the alternative — an agent slurping an
+unbounded append-only file into its context — is the read-side twin of
+a skill writing harness files by hand. The result carries a
+`formatVersion` matching this contract's version and the engine that
+produced it; consumers may branch on it, and additions bump the minor.
+
+5. **Ordering is file position, reversed** (newest first). Position is
+   mechanical; timestamps are content — `JOURNAL_WRITE_FAILED` invites
+   hand-appended repair entries, whose `at` may be absent, malformed,
+   or out of order. `--since` therefore filters on `at` as content
+   (RFC3339, or `YYYY-MM-DD` meaning UTC midnight), and entries
+   without a parsable `at` are excluded from a `--since` query with
+   the exclusion announced in `notes` — a silent cut anywhere is a
+   contract violation (cli-envelope rule 5).
+6. **Entries survive verbatim.** The reader decodes lines as raw
+   objects, so kinds and fields the engine does not recognize pass
+   through untouched — rule 3 held by construction. A malformed line
+   is `JOURNAL_LINE_UNREADABLE` (warning, naming the count and first
+   bad line) and never a refusal: valid entries are still returned,
+   and the fix directs correction by *appending*, never by editing —
+   append-only is a protected surface. An absent journal is
+   `JOURNAL_ABSENT` (info): a fact, not a failure.
+7. **The engine counts; it never judges.** The result's `surfaces`
+   table aggregates `apply` entries per path — `applied` and
+   `conflicted` counted separately (a surface that keeps conflicting
+   is being fought over; one that is merely touched often is not),
+   with first/last timestamps, sorted most-conflicted first. Only
+   `apply` entries carry paths (`add` records a component, `upgrade`
+   records refs). Whether two failures are *the same failure* is
+   judgment and belongs to the diagnose procedure; the engine hands
+   it the countable half.
+8. **Reads offload like everything else.** The full filtered set is
+   written to `.rein/out/journal.json` and announced
+   (`OUTPUT_OFFLOADED`, naming the limit when `--limit` cut the
+   inline list); `--limit 0` is a legal ask for counts and surfaces
+   only. Reading never mutates the journal.
+

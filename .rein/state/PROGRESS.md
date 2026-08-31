@@ -9,7 +9,7 @@ session re-derives it — or worse, trusts it.
 
 Clean baseline as of 2026-08-31. `bash scripts/verify` GREEN,
 `rein doctor` on this repo reports 0 findings over 5 managed files,
-working tree committed through `877cd1c`. No TODO/FIXME markers in
+working tree committed through `52a98f3`. No TODO/FIXME markers in
 the tree. The repo is self-hosted: CLAUDE.md is rendered by rein —
 edit `.rein/overrides/`, never CLAUDE.md or scripts/verify directly,
 then `rein apply --yes`.
@@ -22,22 +22,24 @@ survive in the code: what is next, what is unproven, what is blocked.
 evolve, and evolve's mechanics do not land until its substrates
 exist:
 
-1. `rein journal` — an engine-side read path. The engine writes
-   `.rein/journal.jsonl` but offers no way to read it; rein-diagnose
-   currently instructs the agent to read the raw JSONL by hand. That
-   is an unbounded append-only file entering context with no
-   `OUTPUT_OFFLOADED` and no engine-computed recurrence or
-   trajectory, though `spec/journal.md` rule 4 names both as the
-   substrate readers want. Closest thing to a live contract gap.
-2. Gate-can-fail as a standing check. `GATE_STUB` catches a *stub*
+1. Gate-can-fail as a standing check. `GATE_STUB` catches a *stub*
    verify; nothing checks that a *real* gate can still fail.
    Breakage injection lives only in rein-setup step 7 and is
    deliberately unmechanized (running project code from doctor would
    either execute arbitrary code or prove the wrong thing) — so the
    open question is what a truthful engine-side version even is.
-3. Fragment citation telemetry — not started.
-4. Cost surfaces beyond the instruction file — not started; plan
+2. Fragment citation telemetry — not started.
+3. Cost surfaces beyond the instruction file — not started; plan
    prices the instruction composition only.
+
+`rein journal` (previously first in this list) shipped 2026-08-31:
+read path with filters and a surfaces table, spec/journal.md v0.3,
+cli-envelope v0.3 (fix rescoped to error/warning, mechanically
+enforced), rein-diagnose 0.3 driving the journal both directions.
+Deliberately not included: semantic recurrence over note text (a
+procedure's judgment) and component-level aggregation (mechanical
+and legitimate, but no consumer asks for it yet — add when one
+does).
 
 Also unstarted and named in `AGENTS.md`: the minimal profile as a
 shipped control mode; release automation.

@@ -19,11 +19,14 @@ and `.rein/overrides/`.
 - Run `rein doctor` and `bash scripts/verify`; note every finding.
 - Run `rein dump` and read `.rein/out/dump.json` — know what the
   harness currently says before judging what it failed to say.
-- Read `.rein/journal.jsonl` and the progress file for this failure's
-  history. A single occurrence can be accidental — say so and stop at
-  a note unless the human insists. A recurrence after an earlier fix
-  means the earlier attribution was wrong; diagnose the attribution,
-  do not stack a second artifact on the first.
+- Run `rein journal --path <suspected surface>` and
+  `rein journal --kind note` for this failure's history, and read the
+  progress file. The surfaces table counts applied and conflicted
+  separately — a surface that keeps conflicting is being fought over.
+  A single occurrence can be accidental — say so and stop at a note
+  unless the human insists. A recurrence after an earlier fix means
+  the earlier attribution was wrong; diagnose the attribution, do not
+  stack a second artifact on the first.
 
 ## 2. Attribute to a subsystem
 
@@ -69,7 +72,12 @@ failure add cost faster than effect.
 ## 5. Close
 
 - `rein doctor` clean, verify green.
-- Record in `.rein/state/PROGRESS.md`: the failure, the attribution,
-  the artifact shipped, and the prediction — and every attribution
-  you considered and rejected, with why. The rejected candidates are
-  what stop the next diagnosis from re-walking this one.
+- Record the ruling where the next diagnosis will look:
+  `rein note "diagnose: <failure> -> <subsystem>; shipped <artifact>;
+  predicted <Y instead of Z>; rejected: <candidates, why>"`. The
+  rejected candidates are what stop the next diagnosis from
+  re-walking this one — and step 1's recurrence check reads the
+  journal, so a ruling recorded only in the progress file is
+  invisible to it.
+- Summarize in `.rein/state/PROGRESS.md` (current state only): the
+  artifact now installed and the prediction now standing.

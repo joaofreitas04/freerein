@@ -32,6 +32,8 @@ commands:
   adapters  list embedded host adapters
   probes    list the affordance vocabulary requires: entries may use
   note      append a note entry to the harness journal
+  journal   read the harness history back out (newest first, offloaded;
+            --kind/--since/--path filter, --limit caps inline entries)
   version   engine version
 
 flags:
@@ -48,6 +50,10 @@ func main() {
 	adapterName := fs.String("adapter", "claude-code", "host adapter (init)")
 	registrySrc := fs.String("registry", "", "registry index URL or path")
 	yes := fs.Bool("yes", false, "confirm side effects")
+	kind := fs.String("kind", "", "journal: exact kind filter")
+	since := fs.String("since", "", "journal: RFC3339 or YYYY-MM-DD lower bound")
+	pathF := fs.String("path", "", "journal: only entries touching this path")
+	limit := fs.Int("limit", 20, "journal: inline entry cap (0 = counts only)")
 	human := fs.Bool("human", false, "human-readable output")
 	fs.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 
@@ -107,6 +113,8 @@ func main() {
 		g.Probes(e)
 	case "inspect":
 		g.Inspect(e)
+	case "journal":
+		g.Journal(e, engine.JournalOpts{Kind: *kind, Since: *since, Path: *pathF, Limit: *limit})
 	case "note":
 		g.Note(e, strings.Join(positionals, " "))
 	case "version":
