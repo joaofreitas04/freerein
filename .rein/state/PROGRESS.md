@@ -49,7 +49,27 @@ shipped control mode; release automation.
 
 ## In flight
 
-Nothing.
+Fragment citation telemetry: designed, awaiting the owner's ruling
+(2026-08-31). Proposal — mechanics for lifecycle.md §1.2, all of
+whose positions it inherits: fragment IDs are `component:filename`
+(version-free, per-fragment-file — per-rule granularity only if real
+data demands it); the render inserts one `<!-- rein:fragment <id> -->`
+comment per fragment (extends the existing rendered-by header
+pattern; the bytes land in plan's budget, so the cost is priced);
+`rein cite <id>` increments a counter + last-cited stamp in
+`.rein/stats/citations.json` (engine-written, deterministic key
+order, committed; NOT the journal — counters are not history),
+validating the ID against the current composition; `rein cite` with
+no args reads back counts joined against the composition, ranking
+zero/stale-citation fragments as decay candidates with the §1.5
+misreading attached in the envelope ("zero can mean decay or
+mastery — ablate, never sweep"); one standing rule added to
+instructions-base (0.3) asking agents to cite a fragment that shaped
+an action. New spec/citation.md v0.1 (IDs, marker, store, commands,
+misreadings); resolution.md gains the marker rule. Deliberately out:
+automatic removal, per-rule IDs, hook-based auto-citation (hosts
+unverified — the convention is instruction-rung, and citation
+compliance being imperfect is itself named evidence).
 
 ## Noted, not yet actioned
 
