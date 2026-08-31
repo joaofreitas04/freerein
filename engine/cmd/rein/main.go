@@ -31,6 +31,9 @@ commands:
   upgrade   check registry components for newer versions (--yes to vendor)
   adapters  list embedded host adapters
   probes    list the affordance vocabulary requires: entries may use
+  gaps      join absent affordances to the registry's addresses —
+            coverage facts and creation candidates, never lift claims
+            (works before init; --registry overrides the source)
   note      append a note entry to the harness journal
   attest    record a proof a procedure performed (subject: gate-can-fail)
   cite      record that a fragment shaped an action (no argument: read
@@ -172,6 +175,8 @@ func main() {
 		g.Adapters(e)
 	case "probes":
 		g.Probes(e)
+	case "gaps":
+		g.Gaps(e, *registrySrc)
 	case "inspect":
 		g.Inspect(e)
 	case "journal":
