@@ -26,54 +26,44 @@ survive in the code: what is next, what is unproven, what is blocked.
    every further mechanism should be demanded by a real run, not
    speculated. Field test 2 is concluded (below); what remains is
    sessions, on this repo and the field repo, accruing citation and
-   journal data. The first evolve proposal on THIS repo waits for
-   that data (day-one zeros are the misreading, not evidence).
-2. **SHIPPED 2026-08-31.** All field-demanded fixes from field
-   test 2 landed, each with its fixture red before the fix: the
-   detection-table entries, candidate derivation, plan-side
-   EXISTS_UNMANAGED, flag-anywhere dispatch, and rein-setup 0.8's
-   six patches. The field case corpus lives at
-   `engine/internal/engine/field_test.go` and only grows; the
-   consumed findings' full text is in git history.
-3. **The paired eval — ruled ACCEPTED 2026-08-31, SHIPPED the same
-   day** (`spec/eval.md` v0.1): `rein eval next` (deterministic,
-   counterbalanced — the operator asks, never picks) / `eval record`
-   (condition read from the installed harness; an unapplied
-   declaration is refused; runs append-only in
-   `.rein/eval/runs.jsonl`, void-by-append honored) / `rein eval`
-   (latest run per task/operator/arm, paired, grouped never pooled,
-   misreadings in the result). What remains is not code: the owner
-   curates `.rein/eval/tasks.jsonl` from the repo's own work (rule
-   1 — id, statement, runnable done_check, source), and runs accrue
-   through real sessions under item 1. The instrument never closes
-   a proposal; verdicts may pre-name its read as their measurement.
-4. **Field-report channel — ruled ACCEPTED 2026-08-31, and mostly
-   SHIPPED the same day** (`spec/field-report.md` v0.2): `rein
-   report` (producer-side assembly: lock facts, journal since-dates
-   on shadows, component-prefixed citations, judgment fields as
-   mandatory flags; written to `.rein/out/report/`, never
-   transmitted — `off` is the only submission level) and
-   rein-diagnose 0.5 (disposition read from the lock at attribution;
-   shipped-component closes with a report, never a silent fork), and
-   the `SHADOW_STANDING` doctor advisory — ruled threshold-free
-   2026-08-31 (spec amended to v0.3): every standing shadow listed
-   with its journal-read age, both readings attached, the human
-   judges; a number can be earned once real ages exist. On THIS repo
-   the advisory correctly fires once, for the adopted verify gate —
-   expected, not a regression. Remaining: only the propose/auto
-   submission transport, which waits for a real report to demand it.
-5. **Setup deepening** — next up, and it needs scoping before code
-   (see Blocked): inspect breadth (hooks, skills directories, state
-   files, prior installs — [real 15]'s skills-dir half is consumed;
-   the rest has no named paths yet, and detection tables grow from
-   real runs, not speculation), symlink resolution, a
-   wired-vs-declared cross-check (shape undecided: doctor advisory
-   on foreign files in managed dirs vs inspect-side
-   declared-vs-present diff); allow/block asked as proposals with
-   affordance-backed feasibility verdicts instead of open
-   questions; detected gaps matched to extension `addresses:` —
-   which is also the honest answer to what the registry publishes
-   first (a deliberate product decision, per Assumptions).
+   journal data — and now eval runs: the instrument is live, the
+   task set awaits the owner's curation (Blocked). The first evolve
+   proposal on THIS repo waits for that data (day-one zeros are the
+   misreading, not evidence).
+2. **Doctor in the gate, on THIS repo.** The standing open question
+   has its answer on file: doctor belongs in
+   `.rein/overrides/scripts/verify` as repo policy — self-hosted
+   means a hand-edited CLAUDE.md is a real failure mode only doctor
+   catches — never as a product default, and CI keeps running
+   nothing the gate does not. Landing it is a change to the
+   definition of done: prove the changed gate red, then re-attest.
+   The check must key on doctor's ok plus error/warning findings,
+   not the findings count — the SHADOW_STANDING info advisory is
+   the expected baseline here.
+3. **First registry publication.** The demand signal now exists —
+   `rein gaps` aggregates creation candidates — and the index
+   carries `addresses` (registry v0.3). What ships first stays the
+   owner's product decision; a spec-flow procedure remains the
+   named candidate.
+4. **Submission transport** (`report.submit` propose/auto via gh,
+   fingerprint dedup onto shared issue threads) — built when a real
+   report demands it; the invariant and constraints are already
+   written (field-report v0.3).
+5. **Detection rulings waiting on more repos** (evidence below):
+   plain-angular multi-project as a monorepo marker; scaffold-vs-
+   copy duplicate grouping in the measure; the host-file redirect
+   stub question.
+
+Shipped 2026-08-31, this list's previous occupants: every field-
+demanded fix from field test 2 (fixture-red-first, corpus at
+`field_test.go`); the paired eval as ruled (spec/eval.md v0.1);
+the field-report channel as ruled (spec v0.3 — `rein report`,
+diagnose 0.5 disposition, threshold-free SHADOW_STANDING); and
+setup deepening as ruled by the owner (inspect v0.3: per-host
+surfaces, prior_install, wiring, symlink
+resolution; registry v0.3 addresses; `rein gaps`; rein-setup 0.9:
+incumbent dispositions, the gap map, permissions as rung-placed
+proposals with feasibility verdicts).
 
 Deliberately not scheduled, each waiting on its trigger: the trust
 ledger, per-model profiles, the visible-index budget check, and the
@@ -225,14 +215,8 @@ an unrelated change:
   candidate), not something to bundle into infrastructure work. Until
   a first component is published, the archive-fetch path over live
   HTTPS rests on the httptest coverage, not a production run.
-- Whether `rein doctor` clean belongs in the gate is unsettled. This
-  repo is self-hosted, so a hand-edited CLAUDE.md is a real failure
-  mode that only doctor catches — but `scripts/verify` does not run
-  it, and CI deliberately runs nothing the gate does not. Putting
-  doctor in CI alone would make CI stricter than the gate: verify
-  green locally, red on push. If it should block, it belongs in
-  `.rein/overrides/scripts/verify`, and that is a deliberate change to
-  the definition of done, not a drive-by.
+- Doctor-in-gate: settled, not yet landed — the answer and the
+  landing ceremony are § Next item 2.
 
 ## Blocked / needs a human
 
@@ -240,12 +224,8 @@ an unrelated change:
   `.rein/eval/tasks.jsonl` is empty — tasks are the repo's own work
   and the owner curates them (spec/eval.md rule 1); the engine
   refuses to invent any.
-- **Scoping: § Next item 5 (setup deepening).** Which inspect
-  surfaces earn table rows without fresh field evidence (hooks?
-  state files? prior-install markers — which?); the
-  wired-vs-declared cross-check's shape (doctor advisory on foreign
-  files in managed dirs vs inspect-side declared-vs-present diff);
-  and what the registry publishes first.
+- **First registry publication** (§ Next item 3): the demand-signal
+  mechanism exists; the choice of what ships first is the owner's.
 - **Codex skill frontmatter dialect.** Still a declared degradation
   in `content/adapters/codex.yaml` (`user_invoked_flag: ""`,
   "invocation-governance flags unverified for this host"). Needs

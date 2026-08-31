@@ -67,7 +67,9 @@ files — `EXISTS_UNMANAGED`, adoption via overrides) · `dump` ·
 tamper detection; removal is refcounted and flows through plan/apply)
 · `adapters` · `probes` (registered affordance vocabulary, five
 entries, detection shared with inspect so gating and report cannot
-disagree) · `journal` (filters, newest-first by file position,
+disagree) · `gaps` (absent affordances joined to the registry's
+addresses: coverage facts and creation candidates, never lift
+claims; works before init) · `journal` (filters, newest-first by file position,
 unknown kinds preserved verbatim, applied-vs-conflicted surfaces
 table, always offloaded) · `note` and `attest` (procedures record
 rulings and proofs through the engine — the journal stays mechanical
@@ -116,10 +118,13 @@ agent-owned, never drift-tracked; removal leaves them and says so
 scoped facts only, case-before-fix intake, publish as the signing
 boundary, submission under no-unattended-egress; SHADOW_STANDING
 threshold-free by ruling) · host-adapter
-v0.1 · inspection v0.2 · journal v0.5
+v0.1 · inspection v0.3 (prior_install; wiring — declared/wired as
+facts, consumed refused; symlink-resolved corpus; per-host
+surfaces) · journal v0.5
 (append-only; `note`/`attest`/`proposal`/`verdict` kinds; read path
 with surfaces) ·
-lockfile v0.1 · registry v0.2 · resolution v0.5 (citation markers
+lockfile v0.1 · registry v0.3 (addresses in the index) · resolution
+v0.5 (citation markers
 in the render; whole-composition cost tiers; profiles) · eval v0.1
 (accepted 2026-08-31: the engine keeps score and never runs a task;
 tasks curated by the human with mechanical done-checks;
@@ -181,4 +186,4 @@ via httptest) · `publish_test` · `lifecycle_test` (journal, budget,
 addresses) · `inspect_test` (incl. measure states) · `journal_test` ·
 `attest_test` · `fixlint_test` (envelope rule 2) · `field_test` (the
 grow-only field case corpus — every detection defect lands red here
-before its fix) · `report_test` · `eval_test`.
+before its fix) · `report_test` · `eval_test` · `gaps_test`.
