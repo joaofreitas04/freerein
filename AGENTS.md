@@ -36,7 +36,7 @@ change with a version bump, never a silent edit.
 | Public contracts | `spec/` |
 | Engine (Go) | `engine/` |
 | Core content, procedures, adapters | `content/` |
-| Registry index generator | `registry/` |
+| Registry publishing (archives + index) | `engine/cmd/rein-publish`, `engine/internal/publish` |
 
 ## Commands
 
