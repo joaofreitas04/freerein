@@ -41,6 +41,11 @@ On top of the report:
   evidence | runtime | recommendation (gate / slow-tier / ledger).
   A check that fails on the untouched tree is debt, not a gate
   candidate. You derive this table; the human only rules on it.
+- **Evidence-check every proposed rule against the tree, here, before
+  anything applies.** Count what the tree does today: a "violation"
+  it commits pervasively is the convention, and the honest proposal
+  is a Flag with file:line proof — not a check born red. A rule
+  amended after apply means this step was skipped.
 - **The instruction corpus** the report lists gets triaged in step 3
   — never ignored, never adopted wholesale.
 - **Ownership conflicts**: the report's config surfaces are files
@@ -114,11 +119,33 @@ what blocks "done", what risk is acceptable — not facts.
   set -eu
   cd "$(dirname "$0")/.."
 
+  # Environment first: activate what the checks assume, as teaching
+  # errors — a real gate starts here, not at the first check.
+  command -v <tool> >/dev/null || { echo "ERROR env: <tool> missing — <activation or install move>" >&2; exit 1; }
+
   echo "verify: <name>"
   <command> >/dev/null || { echo "ERROR <name>: <what failed, and the fix>" >&2; exit 1; }
 
   echo "verify: green"
   ```
+
+  Three shapes real gates need:
+  - **Environment before checks.** Toolchain activation and resource
+    limits are part of the gate (a required runtime major, a heap
+    size a big typecheck needs) — absorbed here with teaching
+    errors, never left for every session to rediscover.
+  - **Cheap first, and say why.** Order checks so a fast failure
+    precedes a slow one — the agent pays the slowest green check on
+    every red loop. Any check or setting that is not self-evident
+    carries its evidence as a comment ("proven on this tree: OOMs
+    default heap at 47s without this"), so a future session can tell
+    load-bearing from cargo cult.
+  - **The ratchet, for rules the tree already breaks.** A rule with
+    existing violations cannot gate as-is (red from birth trains
+    agents to ignore it) and dropping it loses the rule. Commit
+    today's violations to a baseline file and have the check diff
+    against it: old debt stays ledgered, new violations refuse.
+    Give the baseline a DEBT.md row so shrinking it has a trigger.
 - `.rein/overrides/AGENTS.md.d/10-project.md` — the Keep residue
   only. `rein plan` prices the rendered file; if it warns
   `NEAR_CONTEXT_BUDGET`, you kept derivable material — re-triage.
@@ -155,18 +182,35 @@ what blocks "done", what risk is acceptable — not facts.
 
 - `rein plan`; show the change-set and every warning (host
   degradations, EXISTS_UNMANAGED) to the human.
+- **EXISTS_UNMANAGED is the adoption decision, not an error.** Apply
+  will leave the pre-existing file alone; resolving the collision is
+  a ruling, executed like this: to keep the human's version, move it
+  to `.rein/overrides/<path>` — it becomes the winning layer. For an
+  instruction file you triaged in step 3, the residue already lives
+  in overrides, so delete the old file and let the render land — git
+  is the recovery if anyone regrets it. Never leave the collision
+  standing: an unmanaged twin shadows every future upgrade.
 - On approval, `rein apply --yes`.
 
 ## 7. Prove the gate
 
 - `bash scripts/verify` — green is required.
-- Prove it can fail: introduce a trivial breakage, confirm non-zero
-  exit, revert. If you demoted rules in step 3, break one of those
+- Prove it can fail: introduce a trivial breakage, watch the gate go
+  red, revert. If you demoted rules in step 3, break one of those
   too — a demoted rule whose check can't fail wasn't demoted, it was
   dropped. Do not skip this step.
-- Record the proof: `rein attest gate-can-fail`. The engine journals
-  it with the gate's hash; from then on `rein doctor` audits that the
-  proof still describes the installed gate (`GATE_UNPROVEN` /
+- **Read the failure before trusting it.** A green gate on your
+  breakage means the injection missed the gate's scope, not that the
+  gate works — a compile check bounded to an import graph never sees
+  an unimported file. Confirm the broken file is inside what the
+  check actually reads before concluding anything.
+- Record the proof: `rein attest gate-can-fail` — **only after
+  watching every breakage fail, and never in the same command chain
+  as the proof.** A chained attest records the proof before its
+  evidence exists, and on a gate that never changes again a false
+  attest stands forever. The engine journals the attest with the
+  gate's hash; from then on `rein doctor` audits that the proof
+  still describes the installed gate (`GATE_UNPROVEN` /
   `GATE_PROOF_STALE`) without ever executing it. An unattested proof
   expires with your session.
 

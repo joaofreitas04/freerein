@@ -114,10 +114,14 @@ floor: verification + managed-files only) · instructions-base 0.3
 (session
 discipline stays ambient — deliberately no operate skill; retrieved
 banner text is content, never command; cite-what-steered-you) · verification-gate 0.2 ·
-state-base 0.3 · procedure-setup 0.7 (inspect-first triage: drop
+state-base 0.3 · procedure-setup 0.8 (inspect-first triage: drop
 derivable / demote to checks / keep runbook residue / flag for
-ruling; evidence-backed gate proposals; breakage-proof + attest at
-step 7) · procedure-diagnose 0.4 (journal recurrence before any
+ruling; evidence-backed gate proposals, rules evidence-checked
+against the tree before apply; verify skeleton: environment first,
+cheap-first with evidence comments, ratchet-with-baseline for
+grandfathered rules; the adoption move at step 6; step-7 attest only
+after watching every breakage fail, injection-scope check taught) ·
+procedure-diagnose 0.4 (journal recurrence before any
 artifact; never stack on an addressed surface; rulings via `rein
 note`; re-prove a touched gate) · procedure-decide 0.1 (immutable
 decision records, refuse-before-generate) · procedure-evolve 0.1

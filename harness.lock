@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "resolved_at": "2026-08-31T14:15:40Z",
-  "engine": "rein 0.2.0",
+  "resolved_at": "2026-08-31T17:32:57Z",
+  "engine": "rein 0.2.0-dev",
   "adapter": {
     "name": "claude-code",
     "version": "0.1.0"
@@ -13,7 +13,7 @@
     },
     {
       "id": "core",
-      "source": "embedded@0.2.0/standard"
+      "source": "embedded@0.2.0-dev/standard"
     }
   ],
   "files": {
@@ -46,11 +46,11 @@
     },
     ".claude/skills/rein-setup/SKILL.md": {
       "layer": "core",
-      "component": "procedure-setup@0.7.0",
-      "hash": "sha256:6518edc7d719173f823fd9f4dc9870a0b50f72c166ba1825c05f3a8e18c9ce9e",
+      "component": "procedure-setup@0.8.0",
+      "hash": "sha256:1f6c0ded9b254718c3545173555d803e9c41071428a3827a37303d1727744154",
       "shadowed": null,
       "refs": [
-        "procedure-setup@0.7.0"
+        "procedure-setup@0.8.0"
       ]
     },
     ".rein/state/DEBT.md": {
