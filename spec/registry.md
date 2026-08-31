@@ -1,4 +1,4 @@
-# Registry — contract v0.2 (draft)
+# Registry — contract v0.3
 
 A registry is a **static JSON index** over HTTPS (or a filesystem
 path — used for local/private registries and tests). No server-side
@@ -12,7 +12,8 @@ logic: the index maps `name` → `version` → a sha256-pinned archive.
         "url": "spec-flow-0.3.0.tar.gz",
         "sha256": "…",
         "kind": "extension",
-        "description": "…"
+        "description": "…",
+        "addresses": ["…"]
       }
     }
   }
@@ -32,6 +33,12 @@ included) are refused at unpack.
    Consequences: consume-side commands stay offline (guarantee 4),
    and what was installed is reviewable in the diff, which is the
    only review that actually happens.
+1b. **The index carries each release's `addresses`** (v0.3, copied
+   verbatim from the manifest at publish time): a consumer joining
+   detected gaps to available extensions reads coverage from the
+   index alone, without fetching an archive. Addresses are coverage
+   claims, never lift claims — "X addresses this gap" is checkable;
+   "X will help here" is not.
 2. **Pin at two levels.** The index pins the archive (sha256); the
    lockfile pins the unpacked tree (deterministic tree hash on the
    layer ref). `doctor` recomputes the tree hash: a mismatch is

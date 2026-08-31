@@ -113,3 +113,46 @@ func splitLines(s string) []string {
 	}
 	return out
 }
+
+// The index carries each release's addresses: the gap join reads
+// coverage from the index alone, without fetching every archive.
+func TestPublishCarriesAddresses(t *testing.T) {
+	work := t.TempDir()
+	comp := filepath.Join(work, "ci-ext")
+	manifest := `name: ci-ext
+kind: extension
+version: 1.0.0
+subsystem: feedback
+rung: instruction
+rent:
+  class: amplifier
+addresses: [ci, test-runner]
+provides:
+  - AGENTS.md.d/70-ci.md
+description: closes the missing-ci gap
+`
+	if err := os.MkdirAll(filepath.Join(comp, "AGENTS.md.d"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(comp, "component.yaml"), []byte(manifest), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(comp, "AGENTS.md.d/70-ci.md"), []byte("## CI\n\nwire it\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	reg := filepath.Join(work, "reg")
+	if err := publish.Run(reg, []string{comp}); err != nil {
+		t.Fatal(err)
+	}
+	idx, err := registry.LoadIndex(filepath.Join(reg, "index.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rel, err := idx.Lookup("ci-ext", "1.0.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rel.Addresses) != 2 || rel.Addresses[0] != "ci" || rel.Addresses[1] != "test-runner" {
+		t.Fatalf("the index must carry the manifest's addresses, got %+v", rel.Addresses)
+	}
+}

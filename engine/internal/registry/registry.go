@@ -23,10 +23,11 @@ import (
 )
 
 type Release struct {
-	URL         string `json:"url"`
-	Sha256      string `json:"sha256"` // of the archive
-	Kind        string `json:"kind"`
-	Description string `json:"description,omitempty"`
+	URL         string   `json:"url"`
+	Sha256      string   `json:"sha256"` // of the archive
+	Kind        string   `json:"kind"`
+	Description string   `json:"description,omitempty"`
+	Addresses   []string `json:"addresses,omitempty"` // failure surfaces the release claims to close (coverage, never lift)
 }
 
 type Index struct {

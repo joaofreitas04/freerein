@@ -20,10 +20,11 @@ import (
 )
 
 type release struct {
-	URL         string `json:"url"`
-	Sha256      string `json:"sha256"`
-	Kind        string `json:"kind"`
-	Description string `json:"description,omitempty"`
+	URL         string   `json:"url"`
+	Sha256      string   `json:"sha256"`
+	Kind        string   `json:"kind"`
+	Description string   `json:"description,omitempty"`
+	Addresses   []string `json:"addresses,omitempty"`
 }
 
 type index struct {
@@ -76,6 +77,7 @@ func Run(out string, dirs []string) error {
 		idx.Components[m.Name][m.Version] = release{
 			URL: archive, Sha256: sha, Kind: m.Kind,
 			Description: strings.TrimSpace(m.Description),
+			Addresses:   m.Addresses,
 		}
 		fmt.Printf("published %s@%s (%s) sha256:%s\n", m.Name, m.Version, m.Kind, sha[:12])
 	}
