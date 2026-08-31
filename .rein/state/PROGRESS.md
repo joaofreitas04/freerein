@@ -22,15 +22,18 @@ survive in the code: what is next, what is unproven, what is blocked.
 evolve, and evolve's mechanics do not land until its substrates
 exist:
 
-1. Gate-can-fail as a standing check. `GATE_STUB` catches a *stub*
-   verify; nothing checks that a *real* gate can still fail.
-   Breakage injection lives only in rein-setup step 7 and is
-   deliberately unmechanized (running project code from doctor would
-   either execute arbitrary code or prove the wrong thing) — so the
-   open question is what a truthful engine-side version even is.
-2. Fragment citation telemetry — not started.
-3. Cost surfaces beyond the instruction file — not started; plan
+1. Fragment citation telemetry — not started.
+2. Cost surfaces beyond the instruction file — not started; plan
    prices the instruction composition only.
+
+Gate-can-fail (previously first here) shipped 2026-08-31: the open
+question resolved on the judgment/computation line — the skill still
+performs the proof (unmechanized on purpose), `rein attest
+gate-can-fail` journals it with the gate's hash, and doctor audits
+proof currency without executing anything (GATE_UNPROVEN /
+GATE_PROOF_STALE, silent when GATE_STUB owns the surface). This
+repo's gate is attested; the proof was a real injected gofmt
+breakage, not a ceremony.
 
 `rein journal` (previously first in this list) shipped 2026-08-31:
 read path with filters and a surfaces table, spec/journal.md v0.3,

@@ -71,7 +71,12 @@ failure add cost faster than effect.
 
 ## 5. Close
 
-- `rein doctor` clean, verify green.
+- `rein doctor` clean, verify green. If your artifact changed
+  `scripts/verify`, doctor will say `GATE_PROOF_STALE`: prove the
+  changed gate can still fail — break what your new check covers,
+  confirm non-zero exit, revert — then `rein attest gate-can-fail`.
+  A verify check that was never seen failing is a rule you hope
+  works.
 - Record the ruling where the next diagnosis will look:
   `rein note "diagnose: <failure> -> <subsystem>; shipped <artifact>;
   predicted <Y instead of Z>; rejected: <candidates, why>"`. The

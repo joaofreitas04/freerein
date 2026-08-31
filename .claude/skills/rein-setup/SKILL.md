@@ -164,6 +164,11 @@ what blocks "done", what risk is acceptable — not facts.
   exit, revert. If you demoted rules in step 3, break one of those
   too — a demoted rule whose check can't fail wasn't demoted, it was
   dropped. Do not skip this step.
+- Record the proof: `rein attest gate-can-fail`. The engine journals
+  it with the gate's hash; from then on `rein doctor` audits that the
+  proof still describes the installed gate (`GATE_UNPROVEN` /
+  `GATE_PROOF_STALE`) without ever executing it. An unattested proof
+  expires with your session.
 
 ## 8. Hand off
 

@@ -1,4 +1,4 @@
-# Journal — contract v0.3 (draft)
+# Journal — contract v0.4 (draft)
 
 `.rein/journal.jsonl` is the append-only history of the installed
 harness: one JSON object per line, engine-written, committed to the
@@ -78,4 +78,25 @@ produced it; consumers may branch on it, and additions bump the minor.
    (`OUTPUT_OFFLOADED`, naming the limit when `--limit` cut the
    inline list); `--limit 0` is a legal ask for counts and surfaces
    only. Reading never mutates the journal.
+
+## Attestation: proofs the engine cannot perform
+
+9. **`attest` records a judgment procedure's proof.** Some facts are
+   provable only with judgment and side effects — the canonical one
+   is *the gate can fail*: introduce a breakage, watch
+   `scripts/verify` exit non-zero, revert. Mechanizing that would
+   mean doctor executing arbitrary project code, or proving the wrong
+   thing; so the procedure proves, and `rein attest gate-can-fail`
+   records the fact with the installed gate's current
+   `sha256` (`{"kind":"attest","subject":"gate-can-fail",
+   "gate":"scripts/verify","gate_hash":"sha256:…"}`). Subjects are a
+   registered vocabulary like probes, never free text. Doctor's half
+   is then mechanical and execution-free: no attestation on a real
+   (non-stub) gate is `GATE_UNPROVEN`; an attestation whose hash no
+   longer matches the installed gate is `GATE_PROOF_STALE` — the
+   proof described a gate that no longer exists. A stub gate raises
+   neither: `GATE_STUB` already owns that surface, and stacked
+   findings for one failure are the thing doctor exists to warn
+   about. This is the gate-can-fail standing check of
+   docs/lifecycle.md §4, split on the judgment/computation line.
 

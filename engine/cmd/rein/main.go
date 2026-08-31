@@ -32,6 +32,7 @@ commands:
   adapters  list embedded host adapters
   probes    list the affordance vocabulary requires: entries may use
   note      append a note entry to the harness journal
+  attest    record a proof a procedure performed (subject: gate-can-fail)
   journal   read the harness history back out (newest first, offloaded;
             --kind/--since/--path filter, --limit caps inline entries)
   version   engine version
@@ -116,6 +117,12 @@ func main() {
 		g.Inspect(e)
 	case "journal":
 		g.Journal(e, engine.JournalOpts{Kind: *kind, Since: *since, Path: *pathF, Limit: *limit})
+	case "attest":
+		if len(positionals) == 0 {
+			e.Fail("MISSING_ARGUMENT", "attest needs a subject", "e.g. `rein attest gate-can-fail`")
+			break
+		}
+		g.Attest(e, positionals[0])
 	case "note":
 		g.Note(e, strings.Join(positionals, " "))
 	case "version":

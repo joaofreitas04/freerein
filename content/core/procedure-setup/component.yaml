@@ -1,6 +1,6 @@
 name: procedure-setup
 kind: core
-version: 0.6.0
+version: 0.7.0
 subsystem: instructions
 rung: conditional
 rent:

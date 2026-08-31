@@ -152,11 +152,17 @@ func (g *Engine) Doctor(e *envelope.Envelope) {
 	compositionAdvisories(e, r.components)
 	// 6. the gate is real — a stub that always fails is not a gate,
 	// and a repo carrying one has verification in name only.
-	if rf, ok := r.rendered["scripts/verify"]; ok && rf.Layer == "core" {
+	gateIsStub := false
+	if rf, ok := r.rendered[GatePath]; ok && rf.Layer == "core" {
+		gateIsStub = true
 		e.Diag(envelope.Warning, "GATE_STUB",
-			"scripts/verify is still the shipped stub — it fails until configured, so this repo has no working gate",
+			GatePath+" is still the shipped stub — it fails until configured, so this repo has no working gate",
 			"author the project's checks in .rein/overrides/scripts/verify (rein-setup step 5 has the skeleton), then run `rein apply --yes`")
 	}
+	// 6b. the gate's proof is current — the standing half of
+	// gate-can-fail: the skill proves (judgment, side effects), the
+	// engine audits that the proof still describes the installed gate.
+	g.gateProofChecks(e, gateIsStub)
 	// 7. the debt ledger's own discipline (state-base seed schema)
 	g.debtChecks(e, r.adapter.StateDir)
 	e.Result = map[string]any{"files_checked": checks, "findings": len(e.Diagnostics)}

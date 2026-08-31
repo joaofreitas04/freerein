@@ -105,9 +105,8 @@ for observe/evolve: `docs/lifecycle.md`; product-level negative space
 and claims discipline: `docs/fitness.md`. Covered additionally by
 `lifecycle_test.go`. Next: codex skill dialect (blocked on
 verified host facts), then observe's remaining substrates in
-lifecycle.md §4 order (gate-can-fail standing check, fragment
-citation telemetry, cost surfaces; minimal profile as a shipped
-control mode). Setup-deepening DONE (2026-08-31b):
+lifecycle.md §4 order (fragment citation telemetry, cost
+surfaces; minimal profile as a shipped control mode). Setup-deepening DONE (2026-08-31b):
 **`rein inspect`** (spec/inspection.md — mechanical discovery: toolchain,
 test candidates with provenance, CI, lint configs, instruction corpus
 incl. nested files, config surfaces, git churn high-touch map, docs
@@ -178,4 +177,16 @@ Pages index. Debt ledger's registry row retired. Release automation DONE
 amd64+arm64, windows amd64; CGO off, trimpath) + SHA256SUMS → GitHub
 release; `engine.Version` became a var so releases stamp the tag via
 ldflags while source builds stay `-dev`; proven by cutting v0.1.0 and
-running the downloaded artifact.
+running the downloaded artifact. Gate-can-fail standing check DONE
+(2026-08-31g, journal spec v0.4): **`rein attest`** — a judgment
+procedure proves what the engine must not (break the gate, watch it
+fail, revert; mechanizing that would execute arbitrary project code
+from doctor), then the engine records the proof in the journal with
+the installed gate's sha256; doctor's half is execution-free —
+`GATE_UNPROVEN` (real gate, no attestation) and `GATE_PROOF_STALE`
+(gate changed since the proof), both silent when `GATE_STUB` already
+owns the surface. Subjects are a registered vocabulary (one entry:
+gate-can-fail). rein-setup 0.7 attests at step 7; rein-diagnose 0.4
+re-proves after any artifact that touches the gate. Dogfooded on this
+repo: real gofmt breakage → verify exit 1 → revert → attest → doctor
+0 findings. Covered by `attest_test.go`.
